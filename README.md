@@ -1,4 +1,5 @@
-# 🍔 FoodHub — Admin Management Portal (Pure Procedural PHP & MySQLi)
+﻿# 🍔 FoodHub - Food Ordering and Delivery Platform
+## Module: Admin Management Portal (Pure Procedural PHP & MySQLi)
 
 FoodHub is a **server-side web application** built for managing a food delivery platform. It features a complete **Admin Portal** built using **pure procedural PHP and procedural MySQLi** (with strictly zero classes, zero OOP objects, and zero PDO). The codebase separates database operations (**models**), presentation templates (**views**), and request handlers (**controllers**) into clean, user-specific role directories using standard PHP file includes (`include`/`require`).
 
@@ -21,8 +22,8 @@ FoodHub is a **server-side web application** built for managing a food delivery 
 
 | Layer        | Technology                                                  |
 |:-------------|:------------------------------------------------------------|
-| **Backend**  | PHP 7.4+ (Pure Procedural PHP, `mysqli_*` procedural functions) |
-| **Database** | MySQL 5.7+ / MariaDB 10.4+ (via XAMPP)                      |
+| **Backend**  | PHP (Pure Procedural PHP, `mysqli_*` procedural functions)  |
+| **Database** | MySQL / MariaDB  (via XAMPP)                                |
 | **Frontend** | HTML5, Vanilla CSS (`assets/css/style.css`)                 |
 | **Session**  | PHP Native Sessions (`session_start()`)                     |
 | **Server**   | Apache (XAMPP local development stack)                      |
