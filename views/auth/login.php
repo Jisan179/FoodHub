@@ -80,18 +80,7 @@ $remembered_user = $_COOKIE['foodhub_user'] ?? '';
             Don't have an account? <a href="register.php" style="color: var(--primary); font-weight: 600; text-decoration: none;">Register here</a>
         </div>
 
-        <!-- Quick Demo Credentials Drawer -->
-        <div class="login-credentials-hint" style="margin-top: 24px; padding: 12px; background: #f8fafc; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); font-size: 0.82rem;">
-            <div style="font-weight: 700; color: var(--text-main); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-                <span>🔑 Test Accounts (Password: <code>role123</code> / <code>admin123</code>)</span>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; color: var(--text-muted);">
-                <div>👑 <strong>Admin:</strong> <code>admin</code></div>
-                <div>🛒 <strong>Customer:</strong> <code>customer1</code></div>
-                <div>🏪 <strong>Manager:</strong> <code>manager1</code></div>
-                <div>🛵 <strong>Rider:</strong> <code>rider1</code></div>
-            </div>
-        </div>
+        
 
     </div>
 </div>
