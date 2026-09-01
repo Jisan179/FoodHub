@@ -76,10 +76,17 @@ function get_approved_restaurants($conn, $limit = 10) {
  */
 function get_restaurant_by_manager_id($conn, $user_id) {
     $user_id = intval($user_id);
-    $stmt = mysqli_prepare($conn, "SELECT * FROM restaurants WHERE user_id = ? LIMIT 1");
+    $stmt = mysqli_prepare($conn, "
+        SELECT r.* 
+        FROM restaurants r 
+        LEFT JOIN restaurant_managers rm ON r.restaurant_id = rm.restaurant_id 
+        WHERE r.user_id = ? OR rm.user_id = ? 
+        ORDER BY r.restaurant_id DESC 
+        LIMIT 1
+    ");
     if (!$stmt) return null;
 
-    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_bind_param($stmt, "ii", $user_id, $user_id);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
     $restaurant = ($result && mysqli_num_rows($result) > 0) ? mysqli_fetch_assoc($result) : null;

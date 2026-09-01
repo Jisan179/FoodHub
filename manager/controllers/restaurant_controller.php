@@ -1,8 +1,8 @@
 <?php
 // manager/controllers/restaurant_controller.php
 session_start();
-require_once '../../config/db.php';
-require_once '../models/RestaurantModel.php';
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../models/RestaurantModel.php';
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Restaurant Manager') {
     header('Location: ../../login.php');

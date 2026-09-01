@@ -1,6 +1,7 @@
 <?php
 /**
  * FoodHub - Session Validation & Role-Based Access Control (RBAC) Middleware
+ * Pure Procedural RBAC with Dynamic Relative Path Resolution
  */
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -12,6 +13,28 @@ if (session_status() === PHP_SESSION_NONE) {
  */
 function is_logged_in() {
     return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+}
+
+/**
+ * Calculate the exact relative path prefix from the currently executing script to the FoodHub root
+ */
+function get_foodhub_root_path() {
+    $project_root = str_replace('\\', '/', realpath(__DIR__ . '/..'));
+    $script_file = $_SERVER['SCRIPT_FILENAME'] ?? '';
+    if (empty($script_file)) {
+        return '';
+    }
+    $script_dir = str_replace('\\', '/', realpath(dirname($script_file)));
+    if (!$script_dir || $script_dir === $project_root) {
+        return '';
+    }
+    if (strpos($script_dir, $project_root) === 0) {
+        $relative = trim(substr($script_dir, strlen($project_root)), '/');
+        $parts = explode('/', $relative);
+        $depth = count(array_filter($parts, 'strlen'));
+        return $depth > 0 ? str_repeat('../', $depth) : '';
+    }
+    return '';
 }
 
 /**
@@ -47,35 +70,27 @@ function normalize_role($role) {
  * Resolve correct relative path to login page depending on current directory
  */
 function get_relative_login_url() {
-    $script = $_SERVER['PHP_SELF'] ?? '';
-    if (strpos($script, '/actions/') !== false) {
-        return '../../login.php';
-    }
-    if (strpos($script, '/admin/') !== false || strpos($script, '/customer/') !== false || strpos($script, '/views/') !== false) {
-        return '../login.php';
-    }
-    return 'login.php';
+    return get_foodhub_root_path() . 'login.php';
 }
 
 /**
- * Resolve correct relative path to base URL / dashboard
+ * Resolve correct relative path to base URL / dashboard for each role
  */
 function get_user_dashboard_url($role = null) {
     if ($role === null && is_logged_in()) {
         $role = $_SESSION['role'] ?? 'Customer';
     }
     $norm_role = normalize_role($role ?? 'Customer');
-    $script = $_SERVER['PHP_SELF'] ?? '';
-    $in_actions_dir = (strpos($script, '/actions/') !== false);
-    $in_admin_dir = (strpos($script, '/admin/') !== false);
-    $in_customer_dir = (strpos($script, '/customer/') !== false);
+    $root = get_foodhub_root_path();
 
     if ($norm_role === 'Administrator') {
-        if ($in_actions_dir) return '../../admin/dashboard.php';
-        return $in_admin_dir ? 'dashboard.php' : ($in_customer_dir ? '../admin/dashboard.php' : 'admin/dashboard.php');
+        return $root . 'admin/dashboard.php';
+    } elseif ($norm_role === 'Restaurant Manager') {
+        return $root . 'manager/views/dashboard.php';
+    } elseif ($norm_role === 'Rider') {
+        return $root . 'rider/dashboard.php';
     } else {
-        if ($in_actions_dir) return '../../dashboard.php';
-        return ($in_admin_dir || $in_customer_dir) ? '../dashboard.php' : 'dashboard.php';
+        return $root . 'customer/dashboard.php';
     }
 }
 
@@ -99,7 +114,6 @@ function check_auth($allowed_roles = []) {
         $current_role = normalize_role($_SESSION['role'] ?? '');
 
         if (!in_array($current_role, $normalized_allowed, true)) {
-            // Role not authorized, redirect to their personalized dashboard
             $target_dashboard = get_user_dashboard_url($current_role);
             $_SESSION['flash_error'] = "Access Denied: You do not have permission to access that area.";
             header("Location: " . $target_dashboard);

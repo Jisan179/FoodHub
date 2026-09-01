@@ -3,12 +3,13 @@
 
 function getRestaurantsByManager($conn, $user_id) {
     $stmt = $conn->prepare("
-        SELECT r.*, rm.role_title 
+        SELECT DISTINCT r.*, COALESCE(rm.role_title, 'owner') AS role_title 
         FROM restaurants r
-        JOIN restaurant_managers rm ON r.restaurant_id = rm.restaurant_id
-        WHERE rm.user_id = ?
+        LEFT JOIN restaurant_managers rm ON r.restaurant_id = rm.restaurant_id
+        WHERE rm.user_id = ? OR r.user_id = ?
+        ORDER BY r.restaurant_id DESC
     ");
-    $stmt->bind_param("i", $user_id);
+    $stmt->bind_param("ii", $user_id, $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     return $result->fetch_all(MYSQLI_ASSOC);
@@ -16,12 +17,13 @@ function getRestaurantsByManager($conn, $user_id) {
 
 function getRestaurantByIdAndManager($conn, $restaurant_id, $user_id) {
     $stmt = $conn->prepare("
-        SELECT r.* 
+        SELECT DISTINCT r.*, COALESCE(rm.role_title, 'owner') AS role_title 
         FROM restaurants r
-        JOIN restaurant_managers rm ON r.restaurant_id = rm.restaurant_id
-        WHERE r.restaurant_id = ? AND rm.user_id = ?
+        LEFT JOIN restaurant_managers rm ON r.restaurant_id = rm.restaurant_id
+        WHERE r.restaurant_id = ? AND (rm.user_id = ? OR r.user_id = ?)
+        LIMIT 1
     ");
-    $stmt->bind_param("ii", $restaurant_id, $user_id);
+    $stmt->bind_param("iii", $restaurant_id, $user_id, $user_id);
     $stmt->execute();
     $result = $stmt->get_result();
     return $result->fetch_assoc();

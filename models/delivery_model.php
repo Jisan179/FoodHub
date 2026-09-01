@@ -118,7 +118,7 @@ function get_rider_stats($conn, $rider_id) {
         WHERE rider_id = ?
     ");
     
-    $stats = ['total_assigned' => 0, 'active_deliveries' => 0, 'completed_deliveries' => 0, 'total_earnings' => 0.0];
+    $stats = ['total_assigned' => 0, 'total_deliveries' => 0, 'active_deliveries' => 0, 'completed_deliveries' => 0, 'total_earnings' => 0.0];
 
     if ($stmt) {
         mysqli_stmt_bind_param($stmt, "i", $rider_id);
@@ -126,6 +126,7 @@ function get_rider_stats($conn, $rider_id) {
         $res = mysqli_stmt_get_result($stmt);
         if ($res && $row = mysqli_fetch_assoc($res)) {
             $stats['total_assigned']       = intval($row['total_assigned'] ?? 0);
+            $stats['total_deliveries']     = intval($row['total_assigned'] ?? 0);
             $stats['active_deliveries']    = intval($row['active_deliveries'] ?? 0);
             $stats['completed_deliveries'] = intval($row['completed_deliveries'] ?? 0);
             // Example flat ৳50 / $3 commission per completed delivery

@@ -535,103 +535,100 @@ function place_customer_order($conn, $customer_id, $delivery_address, $payment_m
     // Begin atomic transaction
     mysqli_begin_transaction($conn);
 
-    try {
-        // 1. Recalculate total directly from database food_items prices to prevent price spoofing
-        $computed_total = 0.0;
-        $validated_items = [];
+    // 1. Recalculate total directly from database food_items prices to prevent price spoofing
+    $computed_total = 0.0;
+    $validated_items = [];
 
-        foreach ($cart_items as $cart_entry) {
-            $item_id = intval($cart_entry['item_id']);
-            $qty     = intval($cart_entry['quantity']);
+    foreach ($cart_items as $cart_entry) {
+        $item_id = intval($cart_entry['item_id']);
+        $qty     = intval($cart_entry['quantity']);
 
-            // Lock & fetch fresh price
-            $fetch_sql = "SELECT item_id, price, status FROM food_items WHERE item_id = $item_id FOR UPDATE";
-            $res = mysqli_query($conn, $fetch_sql);
-            if (!$res || mysqli_num_rows($res) === 0) {
-                throw new Exception("One or more food items in your cart could not be found.");
-            }
-
-            $food = mysqli_fetch_assoc($res);
-            if ($food['status'] !== 'Available') {
-                throw new Exception("Item #{$item_id} is currently unavailable.");
-            }
-
-            $unit_price = floatval($food['price']);
-            $item_subtotal = $unit_price * $qty;
-            $computed_total += $item_subtotal;
-
-            $validated_items[] = [
-                'item_id'  => $item_id,
-                'quantity' => $qty,
-                'price'    => $unit_price,
-                'subtotal' => $item_subtotal
-            ];
+        // Lock & fetch fresh price
+        $fetch_sql = "SELECT item_id, price, status FROM food_items WHERE item_id = $item_id FOR UPDATE";
+        $res = mysqli_query($conn, $fetch_sql);
+        if (!$res || mysqli_num_rows($res) === 0) {
+            mysqli_rollback($conn);
+            return ['success' => false, 'error' => 'One or more food items in your cart could not be found.'];
         }
 
-        // Add flat delivery fee
-        $grand_order_total = $computed_total + 50.00;
-
-        // 2. Insert into orders table
-        $order_sql = "
-            INSERT INTO orders (customer_id, restaurant_id, total_amount, order_status, delivery_address, payment_method, payment_status)
-            VALUES ($safe_cust_id, $restaurant_id, $grand_order_total, 'Pending', '$safe_address', '$safe_payment', 'Unpaid')
-        ";
-
-        if (!mysqli_query($conn, $order_sql)) {
-            throw new Exception("Error creating order header: " . mysqli_error($conn));
+        $food = mysqli_fetch_assoc($res);
+        if ($food['status'] !== 'Available') {
+            mysqli_rollback($conn);
+            return ['success' => false, 'error' => "Item #{$item_id} is currently unavailable."];
         }
 
-        $new_order_id = mysqli_insert_id($conn);
+        $unit_price = floatval($food['price']);
+        $item_subtotal = $unit_price * $qty;
+        $computed_total += $item_subtotal;
 
-        // 3. Insert each order item
-        foreach ($validated_items as $val_item) {
-            $item_id_val  = $val_item['item_id'];
-            $qty_val      = $val_item['quantity'];
-            $price_val    = $val_item['price'];
-            $subtotal_val = $val_item['subtotal'];
-
-            $item_sql = "
-                INSERT INTO order_items (order_id, item_id, quantity, price, subtotal)
-                VALUES ($new_order_id, $item_id_val, $qty_val, $price_val, $subtotal_val)
-            ";
-
-            if (!mysqli_query($conn, $item_sql)) {
-                throw new Exception("Error creating order line items: " . mysqli_error($conn));
-            }
-        }
-
-        // 4. Create initial delivery record
-        $deliv_sql = "
-            INSERT INTO deliveries (order_id, rider_id, delivery_status, assigned_at)
-            VALUES ($new_order_id, NULL, 'Pending Assignment', NOW())
-        ";
-
-        if (!mysqli_query($conn, $deliv_sql)) {
-            throw new Exception("Error initializing delivery record: " . mysqli_error($conn));
-        }
-
-        // 5. Clear cart
-        $clear_sql = "DELETE FROM cart WHERE customer_id = $safe_cust_id";
-        if (!mysqli_query($conn, $clear_sql)) {
-            throw new Exception("Error clearing cart: " . mysqli_error($conn));
-        }
-
-        // Commit transaction
-        mysqli_commit($conn);
-
-        return [
-            'success'  => true,
-            'order_id' => $new_order_id,
-            'total'    => $grand_order_total
-        ];
-
-    } catch (Exception $e) {
-        mysqli_rollback($conn);
-        return [
-            'success' => false,
-            'error'   => $e->getMessage()
+        $validated_items[] = [
+            'item_id'  => $item_id,
+            'quantity' => $qty,
+            'price'    => $unit_price,
+            'subtotal' => $item_subtotal
         ];
     }
+
+    // Add flat delivery fee
+    $grand_order_total = $computed_total + 50.00;
+
+    // 2. Insert into orders table
+    $order_sql = "
+        INSERT INTO orders (customer_id, restaurant_id, total_amount, order_status, delivery_address, payment_method, payment_status)
+        VALUES ($safe_cust_id, $restaurant_id, $grand_order_total, 'Pending', '$safe_address', '$safe_payment', 'Unpaid')
+    ";
+
+    if (!mysqli_query($conn, $order_sql)) {
+        mysqli_rollback($conn);
+        return ['success' => false, 'error' => 'Error creating order header: ' . mysqli_error($conn)];
+    }
+
+    $new_order_id = mysqli_insert_id($conn);
+
+    // 3. Insert each order item
+    foreach ($validated_items as $val_item) {
+        $item_id_val  = $val_item['item_id'];
+        $qty_val      = $val_item['quantity'];
+        $price_val    = $val_item['price'];
+        $subtotal_val = $val_item['subtotal'];
+
+        $item_sql = "
+            INSERT INTO order_items (order_id, item_id, quantity, price, subtotal)
+            VALUES ($new_order_id, $item_id_val, $qty_val, $price_val, $subtotal_val)
+        ";
+
+        if (!mysqli_query($conn, $item_sql)) {
+            mysqli_rollback($conn);
+            return ['success' => false, 'error' => 'Error creating order line items: ' . mysqli_error($conn)];
+        }
+    }
+
+    // 4. Create initial delivery record
+    $deliv_sql = "
+        INSERT INTO deliveries (order_id, rider_id, delivery_status, assigned_at)
+        VALUES ($new_order_id, NULL, 'Pending Assignment', NOW())
+    ";
+
+    if (!mysqli_query($conn, $deliv_sql)) {
+        mysqli_rollback($conn);
+        return ['success' => false, 'error' => 'Error initializing delivery record: ' . mysqli_error($conn)];
+    }
+
+    // 5. Clear cart
+    $clear_sql = "DELETE FROM cart WHERE customer_id = $safe_cust_id";
+    if (!mysqli_query($conn, $clear_sql)) {
+        mysqli_rollback($conn);
+        return ['success' => false, 'error' => 'Error clearing cart: ' . mysqli_error($conn)];
+    }
+
+    // Commit transaction
+    mysqli_commit($conn);
+
+    return [
+        'success'  => true,
+        'order_id' => $new_order_id,
+        'total'    => $grand_order_total
+    ];
 }
 
 // =========================================================================
@@ -786,24 +783,22 @@ function cancel_customer_order($conn, $order_id, $customer_id) {
 
     mysqli_begin_transaction($conn);
 
-    try {
-        // Update order status
-        $update_ord = "UPDATE orders SET order_status = 'Cancelled' WHERE order_id = $safe_ord_id";
-        if (!mysqli_query($conn, $update_ord)) {
-            throw new Exception(mysqli_error($conn));
-        }
-
-        // Update delivery status
-        $update_del = "UPDATE deliveries SET delivery_status = 'Cancelled' WHERE order_id = $safe_ord_id";
-        mysqli_query($conn, $update_del);
-
-        mysqli_commit($conn);
-        return ['success' => true, 'message' => 'Order #$safe_ord_id has been successfully cancelled.'];
-
-    } catch (Exception $e) {
+    // Update order status
+    $update_ord = "UPDATE orders SET order_status = 'Cancelled' WHERE order_id = $safe_ord_id";
+    if (!mysqli_query($conn, $update_ord)) {
         mysqli_rollback($conn);
-        return ['success' => false, 'message' => 'Failed to cancel order: ' . $e->getMessage()];
+        return ['success' => false, 'message' => 'Failed to update order status: ' . mysqli_error($conn)];
     }
+
+    // Update delivery status
+    $update_del = "UPDATE deliveries SET delivery_status = 'Cancelled' WHERE order_id = $safe_ord_id";
+    if (!mysqli_query($conn, $update_del)) {
+        mysqli_rollback($conn);
+        return ['success' => false, 'message' => 'Failed to update delivery status: ' . mysqli_error($conn)];
+    }
+
+    mysqli_commit($conn);
+    return ['success' => true, 'message' => "Order #$safe_ord_id has been successfully cancelled."];
 }
 
 // =========================================================================

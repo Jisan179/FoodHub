@@ -1,4 +1,8 @@
 <?php
+if (!isset($rider_stats)) {
+    require_once __DIR__ . '/../../controllers/dashboard_controller.php';
+}
+
 $pageTitle = 'FoodHub - Rider Dashboard';
 $currentPage = 'dashboard';
 require_once __DIR__ . '/../partials/header.php';

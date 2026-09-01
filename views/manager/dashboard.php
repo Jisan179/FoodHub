@@ -1,4 +1,8 @@
 <?php
+if (!isset($manager_stats)) {
+    require_once __DIR__ . '/../../controllers/dashboard_controller.php';
+}
+
 $pageTitle = 'FoodHub - Restaurant Manager Dashboard';
 $currentPage = 'dashboard';
 require_once __DIR__ . '/../partials/header.php';
@@ -13,10 +17,12 @@ require_once __DIR__ . '/../partials/navbar.php';
             </h1>
             <p class="page-subtitle">Welcome, <?php echo htmlspecialchars($user_name); ?>! Manage kitchen orders, monitor food items, and track restaurant revenues</p>
         </div>
-        <div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <?php if ($my_restaurant): ?>
                 <span class="badge badge-active" style="font-size: 0.9rem; padding: 8px 16px;">Status: <?php echo htmlspecialchars($my_restaurant['status']); ?></span>
+                <a href="<?php echo $root_url; ?>manager/views/menu.php?restaurant_id=<?php echo $my_restaurant['restaurant_id']; ?>" class="btn btn-primary btn-sm">📋 Manage Menu</a>
             <?php endif; ?>
+            <a href="<?php echo $root_url; ?>manager/views/register_restaurant.php" class="btn btn-secondary btn-sm">➕ Register Restaurant</a>
         </div>
     </div>
 
