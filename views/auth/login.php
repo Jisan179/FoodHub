@@ -9,7 +9,7 @@ require_once __DIR__ . '/../partials/header.php';
     <div class="login-card">
         <div class="login-header" style="width: 100%; text-align: center; margin-bottom: 28px;">
             <div class="login-logo" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin: 0 auto 8px auto;">
-                <span>🍔</span>
+            <span>🍔</span>
                 <span>FoodHub</span>
             </div>
             <h2 style="width: 100%; text-align: center; font-size: 1.35rem; font-weight: 700; margin-bottom: 4px;">Portal Login</h2>
