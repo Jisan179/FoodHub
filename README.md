@@ -120,11 +120,3 @@ You will be redirected to the login page.
 | **Restaurant Manager** | `manager1` | `manager123` | Restaurant Management Portal |
 | **Rider** | `rider1` | `rider123` | Rider Delivery Portal |
 
----
-
-## 🔒 Security Highlights
-
-- **SQL Injection Prevention**: Uses `mysqli_real_escape_string()`, prepared statements, and integer casting.
-- **XSS Protection**: All user output is sanitized with `htmlspecialchars()`.
-- **RBAC Authentication**: Session-based guards restrict customer routes to authenticated `Customer` users.
-- **Transaction Safety**: Atomic order placement using `mysqli_begin_transaction()` and `mysqli_rollback()`.
