@@ -1,5 +1,5 @@
 -- FoodHub Database Schema & Initial Seed Data
--- Compatible with MySQL 5.7+ / MariaDB 10.4+
+
 
 CREATE DATABASE IF NOT EXISTS foodhub_db;
 USE foodhub_db;
@@ -97,7 +97,7 @@ CREATE TABLE deliveries (
 -- Insert Users
 INSERT INTO users (user_id, name, username, email, password, role, address, phone, status) VALUES
 (1, 'System Administrator', 'admin', 'admin@foodhub.com', 'admin123', 'Admin', 'FoodHub HQ, Dhaka', '+8801700000000', 'Active'),
-(2, 'John Doe', 'customer1', 'john@example.com', 'customer123', 'Customer', 'House 12, Road 5, Dhanmondi, Dhaka', '+8801700000001', 'Active'),
+(2, 'Ibrar Amin', 'customer1', 'ibrar@example.com', 'customer123', 'Customer', 'House 12, Road 5, Dhanmondi, Dhaka', '+8801700000001', 'Active'),
 (3, 'Rahim Ahmed', 'manager1', 'rahim@spicegrill.com', 'manager123', 'Restaurant Manager', 'Gulshan Avenue, Dhaka', '+8801700000002', 'Active'),
 (4, 'Karim Khan', 'rider1', 'karim@riderhub.com', 'rider123', 'Rider', 'Banani Model Town, Dhaka', '+8801700000003', 'Active'),
 (5, 'Sarah Jenkins', 'customer2', 'sarah@example.com', 'customer123', 'Customer', 'Block C, Bashundhara R/A, Dhaka', '+8801700000004', 'Active'),
@@ -106,7 +106,7 @@ INSERT INTO users (user_id, name, username, email, password, role, address, phon
 -- Insert Restaurants
 INSERT INTO restaurants (restaurant_id, user_id, name, description, address, phone, status) VALUES
 (1, 3, 'Spice Grill House', 'Authentic traditional South Asian grilled specialties and rich biryanis.', 'Plot 45, Road 11, Gulshan 1, Dhaka', '+8801811111111', 'Approved'),
-(2, 6, 'The Burger Spot', 'Gourmet artisan smash burgers, crispy fries and thick milkshakes.', 'House 22, Sector 3, Uttara, Dhaka', '+8801822222222', 'Pending');
+(2, 6, 'The Burger Spot', 'Gourmet artisan smash burgers, crispy fries and thick milkshakes.', 'House 22, Sector 3, Uttara, Dhaka', '+8801822222222', ' Approved');
 
 -- Insert Food Items
 INSERT INTO food_items (item_id, restaurant_id, name, description, price, category, status) VALUES

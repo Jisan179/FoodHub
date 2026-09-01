@@ -54,11 +54,7 @@ require_once __DIR__ . '/../partials/header.php';
                 Sign In to Dashboard
             </button>
         </form>
-
-        <div class="login-credentials-hint">
-            <strong>Default Admin Credentials:</strong><br>
-            Username: <code>admin</code> &nbsp;|&nbsp; Password: <code>admin123</code>
-        </div>
+        
     </div>
 </div>
 
