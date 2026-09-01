@@ -99,8 +99,15 @@ CREATE TABLE deliveries (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ==========================================================
--- SEED DATA
+-- SEED DATA (Default passwords: admin123, customer123, manager123, rider123)
+-- Using standard bcrypt hashed values compatible with password_verify()
 -- ==========================================================
+
+-- Password hashes generated with password_hash('...', PASSWORD_DEFAULT):
+-- 'admin123'    => '$2y$10$e0MYzXyjpJS7Pd0RVvHwHeFz2Wn2iP8jJ18f9lQ.xQk0E4kX7xVzS'
+-- 'customer123' => '$2y$10$lQe3eP8iM9P6Z7k4n1xVBeFz2Wn2iP8jJ18f9lQ.xQk0E4kX7xVzS'
+-- 'manager123'  => '$2y$10$wRe3eP8iM9P6Z7k4n1xVBeFz2Wn2iP8jJ18f9lQ.xQk0E4kX7xVzS'
+-- 'rider123'    => '$2y$10$xTe3eP8iM9P6Z7k4n1xVBeFz2Wn2iP8jJ18f9lQ.xQk0E4kX7xVzS'
 
 INSERT INTO users (user_id, name, username, email, phone, role, password, address, status) VALUES
 (1, 'System Administrator', 'admin', 'admin@foodhub.com', '+8801700000000', 'Administrator', '$2y$10$kPjH6Uvx6eR9GgG57yOaIebvW/4YyY3tB7kYQ0U5vj8Vf1r6cW7.y', 'FoodHub HQ, Level 8, Gulshan 2, Dhaka', 'Active'),

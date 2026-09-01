@@ -1,86 +1,66 @@
 <?php
-// Shared Navigation Bar Component (Role-Aware for Admin & Customer)
+// Shared Admin Navigation Bar Component
 $active_page = $currentPage ?? 'dashboard';
-$current_role = $_SESSION['role'] ?? 'Guest';
-$display_username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'User';
+$admin_username = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Admin';
 
-$in_admin_folder    = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
-$in_customer_folder = (strpos($_SERVER['PHP_SELF'], '/customer/') !== false);
-$in_views_folder    = (strpos($_SERVER['PHP_SELF'], '/views/') !== false);
+$in_admin_folder = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
+$in_views_folder = (strpos($_SERVER['PHP_SELF'], '/views/admin/') !== false);
 
 if ($in_admin_folder) {
-    $dash_url       = 'dashboard.php';
-    $users_url      = 'users.php';
-    $rest_url       = 'restaurants.php';
-    $orders_url     = 'orders.php';
-    $logout_url     = '../logout.php';
-} elseif ($in_customer_folder) {
-    $dash_url       = 'dashboard.php';
-    $browse_url     = 'browse_restaurants.php';
-    $fav_url        = 'favorites.php';
-    $cart_url       = 'cart.php';
-    $orders_url     = 'order_history.php';
-    $reviews_url    = 'reviews.php';
-    $logout_url     = '../logout.php';
+    $dash_url = 'dashboard.php';
+    $users_url = 'users.php';
+    $rest_url = 'restaurants.php';
+    $orders_url = 'orders.php';
+    $logout_url = '../logout.php';
 } elseif ($in_views_folder) {
-    $dash_url       = 'dashboard.php';
-    $users_url      = 'users.php';
-    $rest_url       = 'restaurants.php';
-    $orders_url     = 'orders.php';
-    $browse_url     = 'browse_restaurants.php';
-    $fav_url        = 'favorites.php';
-    $cart_url       = 'cart.php';
-    $reviews_url    = 'reviews.php';
-    $logout_url     = '../../logout.php';
+    $dash_url = 'dashboard.php';
+    $users_url = 'users.php';
+    $rest_url = 'restaurants.php';
+    $orders_url = 'orders.php';
+    $logout_url = '../../logout.php';
 } else {
-    $dash_url       = ($current_role === 'Admin') ? 'admin/dashboard.php' : 'customer/dashboard.php';
-    $users_url      = 'admin/users.php';
-    $rest_url       = 'admin/restaurants.php';
-    $orders_url     = ($current_role === 'Admin') ? 'admin/orders.php' : 'customer/order_history.php';
-    $browse_url     = 'customer/browse_restaurants.php';
-    $fav_url        = 'customer/favorites.php';
-    $cart_url       = 'customer/cart.php';
-    $reviews_url    = 'customer/reviews.php';
-    $logout_url     = 'logout.php';
-}
-
-// Fetch live cart count if logged in as customer
-$cart_count = 0;
-if ($current_role === 'Customer' && isset($conn) && isset($_SESSION['user_id'])) {
-    if (function_exists('count_cart_items')) {
-        $cart_count = count_cart_items($conn, $_SESSION['user_id']);
-    }
+    $dash_url = 'admin/dashboard.php';
+    $users_url = 'admin/users.php';
+    $rest_url = 'admin/restaurants.php';
+    $orders_url = 'admin/orders.php';
+    $logout_url = 'logout.php';
 }
 ?>
-<nav class="admin-navbar <?php echo ($current_role === 'Customer') ? 'customer-navbar' : ''; ?>">
+<nav class="admin-navbar">
     <div class="nav-container">
-        <a href="<?php echo $dash_url; ?>" class="brand-logo">
+        <a href="<?php echo $brand_url; ?>" class="brand-logo">
             <span>🍔 FoodHub</span>
-            <span class="brand-badge <?php echo ($current_role === 'Customer') ? 'customer-badge' : ''; ?>">
-                <?php echo ($current_role === 'Admin') ? 'Admin Portal' : 'Customer'; ?>
-            </span>
+            <span class="brand-badge">Admin Portal</span>
         </a>
 
-        <?php if ($current_role === 'Admin'): ?>
         <ul class="nav-menu">
             <li>
                 <a href="<?php echo $dash_url; ?>" class="nav-link <?php echo ($active_page === 'dashboard') ? 'active' : ''; ?>">
                     📊 Dashboard
                 </a>
             </li>
+
+            <?php if ($user_role === 'Administrator'): ?>
+                <li>
+                    <a href="<?php echo $users_url; ?>" class="nav-link <?php echo ($active_page === 'users') ? 'active' : ''; ?>">
+                        👥 Users
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo $rest_url; ?>" class="nav-link <?php echo ($active_page === 'restaurants') ? 'active' : ''; ?>">
+                        🏪 Restaurants
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo $orders_url; ?>" class="nav-link <?php echo ($active_page === 'orders') ? 'active' : ''; ?>">
+                        📦 Orders & Deliveries
+                    </a>
+                </li>
+            <?php endif; ?>
+
             <li>
-                <a href="<?php echo $users_url; ?>" class="nav-link <?php echo ($active_page === 'users') ? 'active' : ''; ?>">
-                    👥 Users
-                </a>
-            </li>
-            <li>
-                <a href="<?php echo $rest_url; ?>" class="nav-link <?php echo ($active_page === 'restaurants') ? 'active' : ''; ?>">
-                    🏪 Restaurants
-                </a>
-            </li>
-            <li>
-                <a href="<?php echo $orders_url; ?>" class="nav-link <?php echo ($active_page === 'orders') ? 'active' : ''; ?>">
-                    📦 Orders & Deliveries
+                <a href="<?php echo $profile_url; ?>" class="nav-link <?php echo ($active_page === 'profile') ? 'active' : ''; ?>">
+                    👤 Profile
                 </a>
             </li>
         </ul>
@@ -124,12 +104,16 @@ if ($current_role === 'Customer' && isset($conn) && isset($_SESSION['user_id']))
 
         <div class="nav-user">
             <div class="user-pill">
-                <span class="user-avatar <?php echo ($current_role === 'Customer') ? 'cust-avatar' : ''; ?>">
-                    <?php echo strtoupper(substr($display_username, 0, 1)); ?>
-                </span>
-                <span><?php echo $display_username; ?></span>
+                <span class="user-avatar"><?php echo strtoupper(substr($admin_username, 0, 1)); ?></span>
+                <span><?php echo $admin_username; ?></span>
             </div>
             <a href="<?php echo $logout_url; ?>" class="btn-logout">Logout</a>
         </div>
+        <?php else: ?>
+        <div class="nav-user">
+            <a href="login.php" class="btn btn-secondary btn-sm" style="margin-right: 8px;">Sign In</a>
+            <a href="register.php" class="btn btn-primary btn-sm">Register</a>
+        </div>
+        <?php endif; ?>
     </div>
 </nav>
