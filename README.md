@@ -1,4 +1,4 @@
-# 🍔 FoodHub - Customer Module
+﻿# 🍔 FoodHub - Customer Module
 
 **FoodHub** is an online food ordering and delivery web application. This repository contains the **Customer Module**, developed using **pure procedural PHP and procedural MySQLi** (strictly zero OOP classes/objects, zero PDO) following a clean procedural MVC structure.
 
