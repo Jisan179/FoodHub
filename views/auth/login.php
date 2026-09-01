@@ -12,7 +12,7 @@ require_once __DIR__ . '/../partials/header.php';
                 <span>🍔</span>
                 <span>FoodHub</span>
             </div>
-            <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 4px;">Admin Portal Login</h2>
+            <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 4px;">Portal Login</h2>
             <p class="login-subtitle">Enter your administrative credentials to continue</p>
         </div>
 
@@ -54,7 +54,7 @@ require_once __DIR__ . '/../partials/header.php';
                 Sign In to Dashboard
             </button>
         </form>
-        
+
     </div>
 </div>
 
