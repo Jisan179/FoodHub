@@ -523,37 +523,42 @@ textarea.form-control {
 }
 
 .login-header {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    margin-bottom: 28px;
+    margin: 0 auto 28px auto;
 }
 
 .login-logo {
-    display: inline-flex;
-    align-items: center;
+    width: 100%;
+    display: flex;
     justify-content: center;
+    align-items: center;
     gap: 8px;
+    margin: 0 auto 8px auto;
     font-size: 1.75rem;
     font-weight: 800;
     color: var(--primary);
-    margin-bottom: 8px;
+    text-align: center;
 }
 
 .login-header h2 {
+    width: 100%;
     font-size: 1.35rem;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin: 0 auto 4px auto;
     text-align: center;
 }
 
 .login-subtitle {
+    width: 100%;
     color: var(--text-muted);
     font-size: 0.92rem;
     text-align: center;
-    margin: 0;
+    margin: 0 auto;
 }
 
 .login-credentials-hint {
