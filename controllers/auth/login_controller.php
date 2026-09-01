@@ -1,54 +1,96 @@
 <?php
 /**
- * FoodHub - Procedural Login Controller
+ * FoodHub - Authentication & Role-Based Login Controller
  */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Redirect if already logged in as Admin
-if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') {
-    header("Location: admin/dashboard.php");
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../models/user_model.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+
+// If already logged in, redirect to their personalized dashboard
+if (is_logged_in()) {
+    header("Location: " . get_user_dashboard_url());
     exit();
 }
 
 $error = "";
+$success = "";
 $username = "";
 
+// Check for flash messages
+if (isset($_SESSION['flash_success'])) {
+    $success = $_SESSION['flash_success'];
+    unset($_SESSION['flash_success']);
+}
+if (isset($_SESSION['flash_error'])) {
+    $error = $_SESSION['flash_error'];
+    unset($_SESSION['flash_error']);
+}
+
+// Check if registration success banner requested
+if (isset($_GET['registered']) && empty($success)) {
+    $success = "Registration successful! Please sign in with your new credentials.";
+}
+
+// Check if logout banner requested
+if (isset($_GET['logged_out']) && empty($success)) {
+    $success = "You have been safely signed out. See you again soon!";
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $username = trim($_POST['username'] ?? '');
-    $password = trim($_POST['password'] ?? '');
+    $username    = trim($_POST['username'] ?? '');
+    $password    = trim($_POST['password'] ?? '');
+    $remember_me = isset($_POST['remember_me']);
 
     if (empty($username) || empty($password)) {
-        $error = "Please enter both username and password.";
+        $error = "Please enter both your username/email and password.";
     } else {
-        require_once __DIR__ . '/../../config/db.php';
-        require_once __DIR__ . '/../../models/user_model.php';
-
-        $user = find_user_by_username($conn, $username);
+        $user = find_user_by_username_or_email($conn, $username);
 
         if ($user) {
-            // Validate password (supports both plain text seed passwords and password_verify hashes)
-            $password_matches = ($user['password'] === $password || password_verify($password, $user['password']));
+            // Check account status
+            if ($user['status'] === 'Suspended') {
+                $error = "Your account has been suspended. Please contact support.";
+            } elseif ($user['status'] === 'Inactive') {
+                $error = "Your account is currently inactive. Please contact an administrator.";
+            } else {
+                // Verify password (supports bcrypt hash and plain text seed password fallback)
+                $password_matches = (password_verify($password, $user['password']) || $user['password'] === $password);
 
-            if ($password_matches) {
-                if ($user['role'] === 'Admin') {
-                    $_SESSION['user_id']  = $user['user_id'];
+                if ($password_matches) {
+                    // Populate session
+                    $_SESSION['user_id']  = intval($user['user_id']);
                     $_SESSION['username'] = $user['username'];
-                    $_SESSION['role']     = $user['role'];
                     $_SESSION['name']     = $user['name'];
+                    $_SESSION['email']    = $user['email'];
+                    $_SESSION['role']     = normalize_role($user['role']);
+                    $_SESSION['phone']    = $user['phone'] ?? '';
+                    $_SESSION['address']  = $user['address'] ?? '';
+                    $_SESSION['status']   = $user['status'];
 
-                    header("Location: admin/dashboard.php");
+                    // Optional Remember Me cookie
+                    if ($remember_me) {
+                        setcookie('foodhub_user', $user['username'], time() + (86400 * 30), "/");
+                    } else {
+                        if (isset($_COOKIE['foodhub_user'])) {
+                            setcookie('foodhub_user', '', time() - 3600, "/");
+                        }
+                    }
+
+                    // Role-Based Redirection
+                    $redirect_url = get_user_dashboard_url($_SESSION['role']);
+                    header("Location: " . $redirect_url);
                     exit();
                 } else {
-                    $error = "Access denied. Only Admin accounts can access this portal (Current role: " . htmlspecialchars($user['role']) . ").";
+                    $error = "Invalid credentials. Please verify your password and try again.";
                 }
-            } else {
-                $error = "Invalid username or password.";
             }
         } else {
-            $error = "Invalid username or password.";
+            $error = "No active account found with that username or email address.";
         }
     }
 }

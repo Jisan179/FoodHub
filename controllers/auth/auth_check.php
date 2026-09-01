@@ -1,16 +1,9 @@
 <?php
 /**
- * FoodHub - Procedural Auth Guard
- * Session check for Admin authorization
+ * FoodHub - Procedural Auth Guard for Admin Sections
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/../../includes/auth_check.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-    // If inside admin/ subfolder, go up one level to login.php, else to login.php
-    $login_path = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false) ? '../login.php' : 'login.php';
-    header("Location: " . $login_path);
-    exit();
-}
+// Enforce Administrator role
+check_auth(['Administrator', 'Admin']);

@@ -1,7 +1,7 @@
 <?php
 /**
- * FoodHub - Procedural Restaurant Model
- * Pure procedural functions for restaurants table
+ * FoodHub - Restaurant Model
+ * Procedural MySQLi Helpers with Prepared Statements
  */
 
 /**
@@ -37,6 +37,76 @@ function get_all_restaurants($conn) {
     }
 
     return $restaurants;
+}
+
+/**
+ * Get all approved restaurants (for customer view / dashboard)
+ */
+function get_approved_restaurants($conn, $limit = 10) {
+    $limit = intval($limit);
+    $sql = "
+        SELECT 
+            r.restaurant_id,
+            r.name AS restaurant_name,
+            r.description,
+            r.address,
+            r.phone,
+            r.created_at,
+            (SELECT COUNT(*) FROM food_items f WHERE f.restaurant_id = r.restaurant_id AND f.status = 'Available') AS available_items
+        FROM restaurants r
+        WHERE r.status = 'Approved'
+        ORDER BY r.restaurant_id DESC
+        LIMIT $limit
+    ";
+
+    $result = mysqli_query($conn, $sql);
+    $restaurants = [];
+
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $restaurants[] = $row;
+        }
+    }
+
+    return $restaurants;
+}
+
+/**
+ * Get restaurant managed by a specific user (Manager)
+ */
+function get_restaurant_by_manager_id($conn, $user_id) {
+    $user_id = intval($user_id);
+    $stmt = mysqli_prepare($conn, "SELECT * FROM restaurants WHERE user_id = ? LIMIT 1");
+    if (!$stmt) return null;
+
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $restaurant = ($result && mysqli_num_rows($result) > 0) ? mysqli_fetch_assoc($result) : null;
+    mysqli_stmt_close($stmt);
+    return $restaurant;
+}
+
+/**
+ * Get food items for a restaurant
+ */
+function get_food_items_by_restaurant($conn, $restaurant_id) {
+    $restaurant_id = intval($restaurant_id);
+    $stmt = mysqli_prepare($conn, "SELECT * FROM food_items WHERE restaurant_id = ? ORDER BY category ASC, name ASC");
+    if (!$stmt) return [];
+
+    mysqli_stmt_bind_param($stmt, "i", $restaurant_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $items = [];
+
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $items[] = $row;
+        }
+    }
+    mysqli_stmt_close($stmt);
+    return $items;
 }
 
 /**
@@ -93,9 +163,12 @@ function update_restaurant_status($conn, $restaurant_id, $status) {
         return false;
     }
 
-    $safe_id = intval($restaurant_id);
-    $safe_status = mysqli_real_escape_string($conn, trim($status));
+    $id = intval($restaurant_id);
+    $stmt = mysqli_prepare($conn, "UPDATE restaurants SET status = ? WHERE restaurant_id = ?");
+    if (!$stmt) return false;
 
-    $sql = "UPDATE restaurants SET status = '$safe_status' WHERE restaurant_id = $safe_id";
-    return (bool)mysqli_query($conn, $sql);
+    mysqli_stmt_bind_param($stmt, "si", $status, $id);
+    $success = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+    return $success;
 }

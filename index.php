@@ -1,14 +1,12 @@
 <?php
 /**
- * FoodHub - Root Entrypoint Redirect
+ * FoodHub - Root Entrypoint Router
  */
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/includes/auth_check.php';
 
-if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') {
-    header("Location: admin/dashboard.php");
+if (is_logged_in()) {
+    header("Location: " . get_user_dashboard_url());
 } else {
     header("Location: login.php");
 }
