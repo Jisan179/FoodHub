@@ -1,9 +1,6 @@
 <?php
 // manager/models/FoodModel.php
 
-/**
- * Get all active (non-deleted) food items for a specific restaurant.
- */
 function getFoodByRestaurant($conn, $restaurant_id) {
     $stmt = $conn->prepare("
         SELECT * FROM food_items 
@@ -15,9 +12,6 @@ function getFoodByRestaurant($conn, $restaurant_id) {
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-/**
- * Get a specific food item.
- */
 function getFoodById($conn, $item_id, $restaurant_id) {
     $stmt = $conn->prepare("
         SELECT * FROM food_items 
@@ -28,9 +22,6 @@ function getFoodById($conn, $item_id, $restaurant_id) {
     return $stmt->get_result()->fetch_assoc();
 }
 
-/**
- * Insert a new food item.
- */
 function insertFood($conn, $restaurant_id, $name, $description, $price, $category, $status) {
     $stmt = $conn->prepare("
         INSERT INTO food_items (restaurant_id, name, description, price, category, status, is_deleted) 
@@ -40,9 +31,6 @@ function insertFood($conn, $restaurant_id, $name, $description, $price, $categor
     return $stmt->execute();
 }
 
-/**
- * Update an existing food item.
- */
 function updateFood($conn, $item_id, $restaurant_id, $name, $description, $price, $category, $status) {
     $stmt = $conn->prepare("
         UPDATE food_items 
@@ -53,9 +41,6 @@ function updateFood($conn, $item_id, $restaurant_id, $name, $description, $price
     return $stmt->execute();
 }
 
-/**
- * Soft delete a food item.
- */
 function softDeleteFood($conn, $item_id, $restaurant_id) {
     $stmt = $conn->prepare("
         UPDATE food_items 

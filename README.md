@@ -1,4 +1,4 @@
-# 🍔 FoodHub — Food Ordering & Delivery Platform
+# 🍔 FoodHub - Food Ordering & Delivery Platform
 
 ## Authentication, Role-Based Access Control (RBAC) & User Management System
 
@@ -141,7 +141,7 @@ FoodHub/
 │
 ├── assets/
 │   └── js/
-│       └── manager.js                   # Modal helpers (no AJAX)
+│       └── manager.js                   # Modal helpers
 │
 ├── style.css                            # Global FoodHub stylesheet (Bootstrap 5 + custom design system)
 ├── index.php                            # Root entrypoint router
@@ -170,8 +170,8 @@ FoodHub/
 - **Menu Management**: Add, view, edit, and soft-delete menu items (`is_deleted = 1` flag ensures order history integrity).
 - **Order Fulfillment Queue**:
   - View incoming customer orders in BDT Taka (`৳`).
-  - Accept or reject pending orders (`Pending` $\rightarrow$ `Preparing` / `Cancelled`).
-  - Update preparation status (`Preparing` $\rightarrow$ `Ready for Delivery`).
+  - Accept or reject pending orders (`Pending` -> `Preparing` / `Cancelled`).
+  - Update preparation status (`Preparing` -> `Ready for Delivery`).
   - Order status change logging in `order_status_log`.
 
 ### 📊 Administrator Dashboard & Control Panel

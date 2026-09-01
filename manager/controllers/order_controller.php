@@ -15,7 +15,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Restaurant Manager') {
 $user_id = $_SESSION['user_id'];
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
-// Get all restaurants for this manager
 $restaurants = getRestaurantsByManager($conn, $user_id);
 $restaurant_ids = array_column($restaurants, 'restaurant_id');
 
@@ -30,7 +29,7 @@ switch ($action) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $order_id = intval($_POST['order_id'] ?? 0);
             $new_status = htmlspecialchars($_POST['status'] ?? '');
-            
+
             if (!$order_id || !$new_status) {
                 $_SESSION['error'] = "Missing order ID or status.";
             } else {
@@ -41,7 +40,7 @@ switch ($action) {
                     $_SESSION['error'] = $result['message'];
                 }
             }
-            
+
             $redirect_url = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : '../views/orders.php';
             header("Location: " . $redirect_url);
             exit();
