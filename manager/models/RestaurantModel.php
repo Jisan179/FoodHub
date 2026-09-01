@@ -28,30 +28,38 @@ function getRestaurantByIdAndManager($conn, $restaurant_id, $user_id) {
 }
 
 function insertRestaurant($conn, $user_id, $name, $description, $address, $phone, $cuisine_type) {
-    $conn->begin_transaction();
-    try {
-        $stmt = $conn->prepare("
-            INSERT INTO restaurants (user_id, name, description, address, phone, cuisine_type, status, is_open) 
-            VALUES (?, ?, ?, ?, ?, ?, 'Pending', 1)
-        ");
-        $stmt->bind_param("isssss", $user_id, $name, $description, $address, $phone, $cuisine_type);
-        $stmt->execute();
-        $restaurant_id = $conn->insert_id;
+    mysqli_begin_transaction($conn);
 
-        $stmt_manager = $conn->prepare("
-            INSERT INTO restaurant_managers (user_id, restaurant_id, role_title) 
-            VALUES (?, ?, 'owner')
-        ");
-        $stmt_manager->bind_param("ii", $user_id, $restaurant_id);
-        $stmt_manager->execute();
+    $stmt = mysqli_prepare($conn, "
+        INSERT INTO restaurants (user_id, name, description, address, phone, cuisine_type, status, is_open) 
+        VALUES (?, ?, ?, ?, ?, ?, 'Pending', 1)
+    ");
+    mysqli_stmt_bind_param($stmt, "isssss", $user_id, $name, $description, $address, $phone, $cuisine_type);
+    $inserted = mysqli_stmt_execute($stmt);
 
-        $conn->commit();
-        return $restaurant_id;
-    } catch (Exception $e) {
-        $conn->rollback();
+    if (!$inserted) {
+        mysqli_rollback($conn);
         return false;
     }
+
+    $restaurant_id = mysqli_insert_id($conn);
+
+    $stmt_manager = mysqli_prepare($conn, "
+        INSERT INTO restaurant_managers (user_id, restaurant_id, role_title) 
+        VALUES (?, ?, 'owner')
+    ");
+    mysqli_stmt_bind_param($stmt_manager, "ii", $user_id, $restaurant_id);
+    $linked = mysqli_stmt_execute($stmt_manager);
+
+    if (!$linked) {
+        mysqli_rollback($conn);
+        return false;
+    }
+
+    mysqli_commit($conn);
+    return $restaurant_id;
 }
+
 
 function updateRestaurant($conn, $restaurant_id, $user_id, $name, $description, $address, $phone, $cuisine_type) {
     if (!getRestaurantByIdAndManager($conn, $restaurant_id, $user_id)) {
