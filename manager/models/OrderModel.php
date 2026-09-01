@@ -84,18 +84,24 @@ function updateOrderStatus($conn, $order_id, $new_status, $restaurant_ids, $user
         return ['success' => false, 'message' => "Invalid status transition from $old_status to $new_status."];
     }
 
-    $conn->begin_transaction();
-    try {
-        $stmt = $conn->prepare("UPDATE orders SET order_status = ? WHERE order_id = ?");
-        $stmt->bind_param("si", $new_status, $order_id);
-        $stmt->execute();
+    mysqli_begin_transaction($conn);
 
-        logOrderStatusChange($conn, $order_id, $old_status, $new_status, $user_id);
+    $stmt = mysqli_prepare($conn, "UPDATE orders SET order_status = ? WHERE order_id = ?");
+    mysqli_stmt_bind_param($stmt, "si", $new_status, $order_id);
+    $updated = mysqli_stmt_execute($stmt);
 
-        $conn->commit();
-        return ['success' => true, 'message' => 'Order status updated successfully.'];
-    } catch (Exception $e) {
-        $conn->rollback();
-        return ['success' => false, 'message' => 'Database error occurred.'];
+    if (!$updated) {
+        mysqli_rollback($conn);
+        return ['success' => false, 'message' => 'Failed to update order status.'];
     }
+
+    $logged = logOrderStatusChange($conn, $order_id, $old_status, $new_status, $user_id);
+
+    if (!$logged) {
+        mysqli_rollback($conn);
+        return ['success' => false, 'message' => 'Failed to log status change.'];
+    }
+
+    mysqli_commit($conn);
+    return ['success' => true, 'message' => 'Order status updated successfully.'];
 }
