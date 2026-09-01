@@ -2,8 +2,18 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$in_subfolder = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false || strpos($_SERVER['PHP_SELF'], '/views/') !== false);
-$css_path = $in_subfolder ? '../assets/css/style.css' : 'assets/css/style.css';
+require_once __DIR__ . '/../../includes/auth_check.php';
+
+$script = $_SERVER['PHP_SELF'] ?? '';
+if (strpos($script, '/manager/views/') !== false) {
+    $css_path = '../../style.css';
+} elseif (strpos($script, '/admin/') !== false || strpos($script, '/views/admin/') !== false) {
+    $css_path = '../style.css';
+} elseif (strpos($script, '/customer/') !== false) {
+    $css_path = '../style.css';
+} else {
+    $css_path = 'style.css';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

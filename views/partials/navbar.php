@@ -7,6 +7,7 @@ $user_display_name = htmlspecialchars($_SESSION['name'] ?? $_SESSION['username']
 $user_role = isset($_SESSION['role']) ? normalize_role($_SESSION['role']) : 'Customer';
 
 $in_admin_folder = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
+$in_manager_folder = (strpos($_SERVER['PHP_SELF'], '/manager/') !== false);
 $in_views_folder = (strpos($_SERVER['PHP_SELF'], '/views/') !== false);
 
 if ($in_admin_folder) {
@@ -18,24 +19,33 @@ if ($in_admin_folder) {
     $pwd_url      = '../change-password.php';
     $logout_url   = '../logout.php';
     $brand_url    = 'dashboard.php';
+} elseif ($in_manager_folder) {
+    $dash_url     = 'dashboard.php';
+    $menu_url     = 'menu.php';
+    $orders_url   = 'orders.php';
+    $profile_url  = '../../profile.php';
+    $logout_url   = '../../logout.php';
+    $brand_url    = 'dashboard.php';
 } elseif ($in_views_folder) {
-    $dash_url     = ($user_role === 'Administrator') ? 'admin/dashboard.php' : 'dashboard.php';
+    $dash_url     = ($user_role === 'Administrator') ? 'admin/dashboard.php' : (($user_role === 'Restaurant Manager') ? 'manager/views/dashboard.php' : 'dashboard.php');
     $users_url    = 'admin/users.php';
     $rest_url     = 'admin/restaurants.php';
-    $orders_url   = 'admin/orders.php';
-    $profile_url  = 'profile.php';
-    $pwd_url      = 'change-password.php';
-    $logout_url   = 'logout.php';
-    $brand_url    = ($user_role === 'Administrator') ? 'admin/dashboard.php' : 'dashboard.php';
+    $orders_url   = ($user_role === 'Restaurant Manager') ? 'manager/views/orders.php' : 'admin/orders.php';
+    $menu_url     = 'manager/views/menu.php';
+    $profile_url  = '../profile.php';
+    $pwd_url      = '../change-password.php';
+    $logout_url   = '../logout.php';
+    $brand_url    = $dash_url;
 } else {
-    $dash_url     = ($user_role === 'Administrator') ? 'admin/dashboard.php' : 'dashboard.php';
+    $dash_url     = ($user_role === 'Administrator') ? 'admin/dashboard.php' : (($user_role === 'Restaurant Manager') ? 'manager/views/dashboard.php' : 'dashboard.php');
     $users_url    = 'admin/users.php';
     $rest_url     = 'admin/restaurants.php';
-    $orders_url   = 'admin/orders.php';
+    $orders_url   = ($user_role === 'Restaurant Manager') ? 'manager/views/orders.php' : 'admin/orders.php';
+    $menu_url     = 'manager/views/menu.php';
     $profile_url  = 'profile.php';
     $pwd_url      = 'change-password.php';
     $logout_url   = 'logout.php';
-    $brand_url    = ($user_role === 'Administrator') ? 'admin/dashboard.php' : 'dashboard.php';
+    $brand_url    = $dash_url;
 }
 
 $badge_class = 'badge-customer';
@@ -68,6 +78,17 @@ elseif ($user_role === 'Rider') $badge_class = 'badge-rider';
                 <li>
                     <a href="<?php echo $rest_url; ?>" class="nav-link <?php echo ($active_page === 'restaurants') ? 'active' : ''; ?>">
                         🏪 Restaurants
+                    </a>
+                </li>
+                <li>
+                    <a href="<?php echo $orders_url; ?>" class="nav-link <?php echo ($active_page === 'orders') ? 'active' : ''; ?>">
+                        📦 Orders & Deliveries
+                    </a>
+                </li>
+            <?php elseif ($user_role === 'Restaurant Manager'): ?>
+                <li>
+                    <a href="<?php echo $menu_url; ?>" class="nav-link <?php echo ($active_page === 'menu') ? 'active' : ''; ?>">
+                        🍴 Menu Management
                     </a>
                 </li>
                 <li>
