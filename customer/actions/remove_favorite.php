@@ -16,5 +16,6 @@ if ($restaurant_id > 0) {
     $_SESSION['flash_success'] = "Restaurant removed from your favorites.";
 }
 
-header("Location: " . $redirect_url);
+$safe_redirect = resolve_customer_redirect($redirect_url, '../favorites.php');
+header("Location: " . $safe_redirect);
 exit();

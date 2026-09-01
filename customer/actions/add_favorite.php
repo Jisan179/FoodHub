@@ -16,5 +16,6 @@ if ($restaurant_id > 0) {
     $_SESSION['flash_success'] = "Restaurant added to your favorites!";
 }
 
-header("Location: " . $redirect_url);
+$safe_redirect = resolve_customer_redirect($redirect_url, '../browse_restaurants.php');
+header("Location: " . $safe_redirect);
 exit();

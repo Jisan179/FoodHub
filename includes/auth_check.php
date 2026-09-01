@@ -48,10 +48,10 @@ function normalize_role($role) {
  */
 function get_relative_login_url() {
     $script = $_SERVER['PHP_SELF'] ?? '';
-    if (strpos($script, '/admin/') !== false || strpos($script, '/views/admin/') !== false) {
-        return '../login.php';
+    if (strpos($script, '/actions/') !== false) {
+        return '../../login.php';
     }
-    if (strpos($script, '/views/') !== false) {
+    if (strpos($script, '/admin/') !== false || strpos($script, '/customer/') !== false || strpos($script, '/views/') !== false) {
         return '../login.php';
     }
     return 'login.php';
@@ -66,12 +66,16 @@ function get_user_dashboard_url($role = null) {
     }
     $norm_role = normalize_role($role ?? 'Customer');
     $script = $_SERVER['PHP_SELF'] ?? '';
+    $in_actions_dir = (strpos($script, '/actions/') !== false);
     $in_admin_dir = (strpos($script, '/admin/') !== false);
+    $in_customer_dir = (strpos($script, '/customer/') !== false);
 
     if ($norm_role === 'Administrator') {
-        return $in_admin_dir ? 'dashboard.php' : 'admin/dashboard.php';
+        if ($in_actions_dir) return '../../admin/dashboard.php';
+        return $in_admin_dir ? 'dashboard.php' : ($in_customer_dir ? '../admin/dashboard.php' : 'admin/dashboard.php');
     } else {
-        return $in_admin_dir ? '../dashboard.php' : 'dashboard.php';
+        if ($in_actions_dir) return '../../dashboard.php';
+        return ($in_admin_dir || $in_customer_dir) ? '../dashboard.php' : 'dashboard.php';
     }
 }
 

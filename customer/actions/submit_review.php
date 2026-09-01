@@ -16,7 +16,8 @@ $redirect_url = $_POST['redirect_url'] ?? $_SERVER['HTTP_REFERER'] ?? '../review
 
 if ($order_id <= 0 || $item_id <= 0) {
     $_SESSION['flash_error'] = "Invalid order item specified for review.";
-    header("Location: " . $redirect_url);
+    $safe_redirect = resolve_customer_redirect($redirect_url, '../reviews.php');
+    header("Location: " . $safe_redirect);
     exit();
 }
 
@@ -28,5 +29,6 @@ if ($review_res['success']) {
     $_SESSION['flash_error'] = $review_res['message'] ?? "Could not submit review.";
 }
 
-header("Location: " . $redirect_url);
+$safe_redirect = resolve_customer_redirect($redirect_url, '../reviews.php');
+header("Location: " . $safe_redirect);
 exit();

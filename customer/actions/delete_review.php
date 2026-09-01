@@ -13,7 +13,8 @@ $redirect_url = $_POST['redirect_url'] ?? $_SERVER['HTTP_REFERER'] ?? '../review
 
 if ($review_id <= 0) {
     $_SESSION['flash_error'] = "Invalid review specified.";
-    header("Location: " . $redirect_url);
+    $safe_redirect = resolve_customer_redirect($redirect_url, '../reviews.php');
+    header("Location: " . $safe_redirect);
     exit();
 }
 
@@ -25,5 +26,6 @@ if ($deleted) {
     $_SESSION['flash_error'] = "Failed to delete review.";
 }
 
-header("Location: " . $redirect_url);
+$safe_redirect = resolve_customer_redirect($redirect_url, '../reviews.php');
+header("Location: " . $safe_redirect);
 exit();

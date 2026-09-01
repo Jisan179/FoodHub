@@ -15,7 +15,8 @@ $redirect_url      = $_POST['redirect_url'] ?? $_SERVER['HTTP_REFERER'] ?? '../c
 
 if ($item_id <= 0) {
     $_SESSION['flash_error'] = "Invalid item selected.";
-    header("Location: " . $redirect_url);
+    $safe_redirect = resolve_customer_redirect($redirect_url, '../cart.php');
+    header("Location: " . $safe_redirect);
     exit();
 }
 
@@ -34,5 +35,6 @@ if ($result['status'] === 'success') {
     $_SESSION['flash_error'] = $result['message'] ?? 'Failed to add item to cart.';
 }
 
-header("Location: " . $redirect_url);
+$safe_redirect = resolve_customer_redirect($redirect_url, '../cart.php');
+header("Location: " . $safe_redirect);
 exit();

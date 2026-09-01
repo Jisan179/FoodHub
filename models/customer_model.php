@@ -1008,3 +1008,27 @@ function get_unreviewed_delivered_items($conn, $customer_id) {
 
     return $unreviewed;
 }
+
+// =========================================================================
+// 7. UTILITY & REDIRECTION HELPERS
+// =========================================================================
+
+/**
+ * Resolve redirection URL safely from customer action endpoints
+ */
+function resolve_customer_redirect($url, $default = '../browse_restaurants.php') {
+    if (empty($url)) {
+        return $default;
+    }
+    // Full URL or root-relative path
+    if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0 || strpos($url, '/') === 0) {
+        return $url;
+    }
+    // Already has relative parent prefix
+    if (strpos($url, '../') === 0) {
+        return $url;
+    }
+    // Plain filename (e.g. 'favorites.php', 'browse_restaurants.php')
+    return '../' . $url;
+}
+
