@@ -1,53 +1,25 @@
 # FoodHub Rider Portal
 
-This branch contains the Rider-focused implementation of the FoodHub delivery platform. It is built with procedural PHP, MySQLi, and a lightweight server-rendered UI for rider operations such as accepting deliveries, updating status, and viewing delivery history.
-
----
+This branch contains the rider-only implementation of the FoodHub delivery platform. It is built with procedural PHP, MySQLi, and a lightweight server-rendered UI for rider operations such as accepting deliveries, updating status, and viewing delivery history.
 
 ## Overview
 
 FoodHub is a delivery management application for a food ordering platform. In this Rider branch, the focus is on the rider experience:
 
 - rider login and session protection
-- available delivery offers and active assignment tracking
+- available delivery offers and assignment tracking
 - pickup and delivery status transitions
-- delivery history and rider earning summary
-
-The implementation keeps the project simple and maintainable by separating concerns into:
-
-- controllers for business logic
-- models for database access
-- views for HTML presentation
-- static assets for CSS/JS
-
----
+- rider earnings and delivery history
+- simple server-side validation and JSON-style AJAX updates
 
 ## Tech Stack
 
-| Layer | Stack |
-|---|---|
-| Backend | PHP 7+ / 8+ (procedural style) |
-| Database | MySQL / MariaDB |
-| Web Server | Apache via XAMPP |
-| Frontend | HTML, CSS, JavaScript |
-| Data Access | mysqli procedural functions |
-| Session Handling | PHP native sessions |
-
-This project intentionally avoids OOP, PDO, and frameworks. It uses plain procedural PHP for clarity and compatibility with the course/project structure.
-
----
-
-## Branch Scope
-
-This repository has been split into separate branch workstreams. The Rider branch is the working branch for operational rider functionality.
-
-Current branch in use:
-
-- `Rider` — rider portal implementation
-
-The main branch has been cleared and kept empty as a clean baseline.
-
----
+- PHP 7+ / 8+ (procedural style)
+- MySQL / MariaDB
+- Apache via XAMPP
+- HTML, CSS, JavaScript
+- mysqli procedural database access
+- PHP native sessions
 
 ## Project Structure
 
@@ -64,6 +36,8 @@ FoodHub/
 │   │   └── style.css
 │   └── js/
 │       └── rider.js
+├── config/
+│   └── db.php
 ├── controllers/
 │   ├── auth/
 │   │   ├── auth_check.php
@@ -73,7 +47,8 @@ FoodHub/
 │   └── rider/
 │       └── dashboard_controller.php
 ├── models/
-│   └── rider_model.php
+│   ├── rider_model.php
+│   └── user_model.php
 ├── rider/
 │   └── dashboard.php
 ├── views/
@@ -89,54 +64,62 @@ FoodHub/
 └── .git/
 ```
 
----
-
-## Functional Scope
+## Rider Features
 
 ### Authentication
 
-The application uses a shared login flow via:
+- rider login page at `login.php`
+- rider-only session guard in `controllers/auth/rider_check.php`
+- redirect to rider dashboard after valid login
+- logout support via `logout.php`
 
-- `login.php`
-- `controllers/auth/login_controller.php`
-- `controllers/auth/rider_check.php`
+### Dashboard
 
-Behavior:
+The rider dashboard includes:
 
-- users submit username/password
-- the system checks the user record in the database
-- valid Rider users are redirected to the rider dashboard
-- unauthenticated or wrong-role users are redirected back to login
-
-### Rider Dashboard
-
-The rider dashboard is the main UI and is served from:
-
-- `rider/dashboard.php`
-- `views/rider/dashboard.php`
-
-The dashboard includes:
-
-- active delivery list
-- available assignment offers
-- assignment acceptance
+- active deliveries and available offers
+- accepted assignments
 - pickup confirmation
 - delivery completion
 - cancellation support
-- rider earning summary
-- delivery history viewer
+- note updates
+- rider earnings summary
+- delivery history
 
-### Delivery Actions
+### Delivery lifecycle
 
-Riders can perform these transitions through the dashboard and controller logic:
+Delivery statuses used by the app:
 
-- Accept assignment
-- Mark as picked up
-- Mark as delivered
-- Cancel delivery
-- Update rider note
+- Pending Assignment
+- Assigned
+- Picked Up
+- Delivered
+- Cancelled
 
-The status transitions are validated in `models/rider_model.php` and recorded in `delivery_status_history`.
+All rider state changes are validated server-side in `models/rider_model.php` before updating the database.
+
+## Database Setup
+
+Import `schema.sql` into MySQL using phpMyAdmin or the MySQL CLI. The script creates `foodhub_db` and seeds demo data including rider accounts and sample deliveries.
+
+## Local Run
+
+1. Place the project in XAMPP web root:
+   `C:\xampp\htdocs\FoodHub`
+2. Start Apache and MySQL in XAMPP.
+3. Import `schema.sql` into `foodhub_db`.
+4. Open:
+   `http://localhost/FoodHub/`
+5. Sign in as the demo rider:
+   - Username: `rider1`
+   - Password: `rider123`
+
+## Notes
+
+- This Rider branch intentionally focuses only on the rider workflow.
+- The main branch is cleared and kept empty as a baseline.
+- SQL schema and CSS were left untouched as requested.
+- This project is procedural PHP and is designed for local demo and learning workflows rather than production deployment.
 
 ---
 
@@ -296,3 +279,106 @@ For production deployment, the project would typically need:
 The Rider branch delivers a working browser-based rider portal built in pure procedural PHP. It is built around the FoodHub delivery lifecycle and is intended to support rider operations in a simple, maintainable, and testable way.
 
 The repository structure and seed data are designed to make local onboarding easy with XAMPP and MySQL.
+=======
+## ✨ Features
+
+### 🔐 Authentication
+- Admin login portal with username + password validation.
+- Supports both plain-text seed passwords and `password_hash()` / `password_verify()`.
+- Procedural auth guard (`controllers/auth/auth_check.php`) included on all admin controllers.
+- Safe logout terminating session state.
+
+### 📊 Admin Dashboard
+- Computed metrics using SQL `COUNT()` and `SUM()`:
+  - Total registered users across all roles.
+  - Pending restaurant approval count.
+  - Total all-time orders.
+  - Total revenue (excluding cancelled orders).
+- Quick-action panel for restaurants awaiting approval.
+- Recent orders table with colour-coded status badges.
+
+### 👥 User Management
+- **Create User Account**: Field validation for Name, Username, Email, Password, and Role (`Customer`, `Restaurant Manager`, `Rider`, `Admin`).
+- **Duplicate Prevention**: Checks for existing usernames and email addresses before insertion.
+- **Search**: Multi-column search across name, username, email, role, and phone.
+- **Delete Safeguard**: Admins are prevented from deleting their own active account.
+
+### 🏪 Restaurant Approvals & Management
+- Lists all partner restaurants with owner details, contact info, and computed menu item counts.
+- **Inline Status Updates**: Dropdown updates validated against a server-side whitelist (`Pending`, `Approved`, `Rejected`, `Suspended`).
+
+### 📦 Orders & Delivery Tracking
+- Comprehensive order table joining orders, customers, restaurants, deliveries, and assigned riders.
+- **Inline Order & Delivery Update**: Allows simultaneous updating of order status, delivery status, and rider assignment with automatic delivery record upsertion.
+
+---
+
+## 🗄 Database Setup
+
+The database contains **6 relational tables**:
+
+| Table           | Description                                                       |
+|:----------------|:------------------------------------------------------------------|
+| `users`         | Accounts: Admin, Customer, Restaurant Manager, Rider              |
+| `restaurants`   | Partner restaurants linked to a `Restaurant Manager` user         |
+| `food_items`    | Menu items belonging to a restaurant                              |
+| `orders`        | Customer orders referencing a customer and a restaurant           |
+| `order_items`   | Individual line items within each order                           |
+| `deliveries`    | Delivery tracking records linking orders to Riders                |
+
+### Import Steps (XAMPP / phpMyAdmin)
+
+1. Start **Apache** and **MySQL** in the XAMPP Control Panel.
+2. Open **`http://localhost/phpmyadmin`** in your browser.
+3. Select the **"Import"** tab.
+4. Choose `schema.sql` from the FoodHub workspace.
+5. Click **"Go"** to create the `foodhub_db` database and seed data.
+
+---
+
+## ▶ How to Run Locally
+
+1. Place the project in XAMPP web root:
+   ```
+   C:\xampp\htdocs\FoodHub\
+   ```
+2. Ensure database configuration in `config/db.php` matches your local MySQL server:
+   ```php
+   $conn = mysqli_connect("localhost", "root", "", "foodhub_db");
+   ```
+3. Open your browser and navigate to:
+   ```
+   http://localhost/FoodHub/
+   ```
+   You will automatically be redirected to the login page.
+
+---
+
+## 🔑 Default Credentials
+
+| Role                | Username    | Password      |
+|:--------------------|:------------|:--------------|
+| **Admin**           | `admin`     | `admin123`    |
+| Customer            | `customer1` | `customer123` |
+| Customer            | `customer2` | `customer123` |
+| Restaurant Manager  | `manager1`  | `manager123`  |
+| Restaurant Manager  | `manager2`  | `manager123`  |
+| Rider               | `rider1`    | `rider123`    |
+
+> The `Admin` and `Rider` roles can log in. Customers and Restaurant Managers are not enabled in this module.
+
+## Rider Portal
+
+The Rider Portal is available at `rider/dashboard.php` after signing in as a Rider. Riders can claim unassigned deliveries, view assigned deliveries, confirm pickup, mark deliveries complete, cancel an assignment, add a delivery note, and inspect completed delivery history. Every action is validated in PHP, limited to the logged-in rider, and returned as JSON for the AJAX client.
+
+The single `schema.sql` file includes the complete seven-table schema, rider delivery metadata, status history, and rider CRUD demo records. Import it into a fresh `foodhub_db` database through phpMyAdmin. It resets and recreates the database tables, so export any data you need before importing.
+
+---
+
+## 🔒 Security Implementation
+
+- **SQL Injection Prevention**: All inputs are sanitized using `mysqli_real_escape_string($conn, ...)` and integer casting `intval(...)`.
+- **XSS Protection**: All view outputs use `htmlspecialchars()` before HTML rendering.
+- **Role Verification**: Non-admin users attempting to log in receive an access denial, and unauthenticated requests are redirected.
+- **Whitelist Validation**: Status update endpoints validate values against defined status arrays.
+>>>>>>> cc910dc (Clean Rider branch and remove admin leftovers)

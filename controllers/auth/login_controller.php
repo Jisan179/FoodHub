@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Redirect if already logged in.
 if (isset($_SESSION['role'])) {
-    header("Location: " . ($_SESSION['role'] === 'Rider' ? 'rider/dashboard.php' : 'admin/dashboard.php'));
+    header("Location: " . ($_SESSION['role'] === 'Rider' ? 'rider/dashboard.php' : 'login.php'));
     exit();
 }
 
@@ -33,16 +33,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $password_matches = ($user['password'] === $password || password_verify($password, $user['password']));
 
             if ($password_matches) {
-                if (in_array($user['role'], ['Admin', 'Rider'], true) && $user['status'] === 'Active') {
+                if ($user['role'] === 'Rider' && $user['status'] === 'Active') {
                     $_SESSION['user_id']  = $user['user_id'];
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['role']     = $user['role'];
                     $_SESSION['name']     = $user['name'];
 
-                    header("Location: " . ($user['role'] === 'Rider' ? 'rider/dashboard.php' : 'admin/dashboard.php'));
+                    header("Location: rider/dashboard.php");
                     exit();
                 } else {
-                    $error = "Access denied. This portal is available to Admin and Rider accounts.";
+                    $error = "Access denied. This portal is available to Rider accounts only.";
                 }
             } else {
                 $error = "Invalid username or password.";

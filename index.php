@@ -7,8 +7,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['Admin', 'Rider'], true)) {
-    header("Location: " . ($_SESSION['role'] === 'Rider' ? 'rider/dashboard.php' : 'admin/dashboard.php'));
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'Rider') {
+    header("Location: rider/dashboard.php");
 } else {
     header("Location: login.php");
 }
