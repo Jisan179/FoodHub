@@ -6,16 +6,15 @@ require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <div class="login-container">
-            <div class="login-header" style="text-align: center; margin-bottom: 28px;">
-            <div style="display: inline-flex; flex-direction: column; align-items: flex-start; text-align: left; margin-bottom: 6px;">
-                <div style="display: flex; align-items: center; font-size: 1.75rem; font-weight: 700; color: #ff5722; margin-bottom: 6px;">
-                    <span style="width: 0; overflow: visible; transform: translateX(-36px); font-size: 1.5rem; line-height: 1;">🍔</span>
-                    <span style="line-height: 1;">FoodHub</span>
-                </div>
-                <h2 style="font-size: 1.35rem; font-weight: 700; color: #1e293b; margin: 0; line-height: 1.2;">Portal Login</h2>
+    <div class="login-card">
+        <div class="login-header" style="width: 100%; text-align: center; margin-bottom: 28px;">
+            <div class="login-logo" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin: 0 auto 8px auto;">
+                <span>FoodHub</span>
             </div>
-            <p class="login-subtitle" style="text-align: center; margin: 0 auto;">Enter your administrative credentials to continue</p>
+            <h2 style="width: 100%; text-align: center; font-size: 1.35rem; font-weight: 700; margin-bottom: 4px;">Portal Login</h2>
+            <p class="login-subtitle" style="width: 100%; text-align: center; margin: 0 auto;">Enter your administrative credentials to continue</p>
         </div>
+
         <?php if (!empty($error)): ?>
             <div class="alert alert-error">
                 <span>⚠️</span>
@@ -31,7 +30,7 @@ require_once __DIR__ . '/../partials/header.php';
                     id="username" 
                     name="username" 
                     class="form-control" 
-                    placeholder="Enter your username" 
+                    placeholder="Enter username" 
                     value="<?php echo htmlspecialchars($username ?? ''); ?>" 
                     required 
                     autofocus
