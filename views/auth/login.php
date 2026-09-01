@@ -31,7 +31,7 @@ require_once __DIR__ . '/../partials/header.php';
                     id="username" 
                     name="username" 
                     class="form-control" 
-                    placeholder="e.g. admin" 
+                    placeholder="Enter your username" 
                     value="<?php echo htmlspecialchars($username ?? ''); ?>" 
                     required 
                     autofocus
