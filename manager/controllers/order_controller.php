@@ -1,14 +1,14 @@
 <?php
 // manager/controllers/order_controller.php
 session_start();
-header('Content-Type: application/json');
 
 require_once '../../config/db.php';
 require_once '../models/OrderModel.php';
 require_once '../models/RestaurantModel.php';
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Restaurant Manager') {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access.']);
+    $_SESSION['error'] = "Unauthorized access.";
+    header('Location: ../../login.php');
     exit();
 }
 
@@ -20,7 +20,8 @@ $restaurants = getRestaurantsByManager($conn, $user_id);
 $restaurant_ids = array_column($restaurants, 'restaurant_id');
 
 if (empty($restaurant_ids)) {
-    echo json_encode(['success' => false, 'message' => 'No restaurants found for this manager.']);
+    $_SESSION['error'] = "No restaurants found for this manager.";
+    header('Location: ../views/orders.php');
     exit();
 }
 
@@ -31,17 +32,23 @@ switch ($action) {
             $new_status = htmlspecialchars($_POST['status'] ?? '');
             
             if (!$order_id || !$new_status) {
-                echo json_encode(['success' => false, 'message' => 'Missing order ID or status.']);
-                exit();
+                $_SESSION['error'] = "Missing order ID or status.";
+            } else {
+                $result = updateOrderStatus($conn, $order_id, $new_status, $restaurant_ids, $user_id);
+                if ($result['success']) {
+                    $_SESSION['success'] = $result['message'];
+                } else {
+                    $_SESSION['error'] = $result['message'];
+                }
             }
             
-            $result = updateOrderStatus($conn, $order_id, $new_status, $restaurant_ids, $user_id);
-            echo json_encode($result);
+            $redirect_url = isset($_POST['redirect_to']) ? $_POST['redirect_to'] : '../views/orders.php';
+            header("Location: " . $redirect_url);
             exit();
         }
         break;
 
     default:
-        echo json_encode(['success' => false, 'message' => 'Invalid action.']);
+        header('Location: ../views/orders.php');
         break;
 }

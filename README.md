@@ -2,7 +2,7 @@
 
 ## Authentication, Role-Based Access Control (RBAC) & User Management System
 
-FoodHub is a **server-side web application** built for a complete food delivery platform experience. It is built using **pure procedural PHP and procedural MySQLi** (zero classes, zero OOP, zero PDO) with a clean **MVC-style separation** of database operations (**models**), presentation templates (**views**), and request handlers (**controllers**) across 4 distinct user roles.
+FoodHub is a **server-side web application** built for a complete food delivery platform experience. It is built using **pure procedural PHP and procedural MySQLi** (zero classes, zero OOP, zero PDO, zero AJAX) with a clean **MVC-style separation** of database operations (**models**), presentation templates (**views**), and request handlers (**controllers**) across 4 distinct user roles.
 
 ---
 
@@ -31,7 +31,7 @@ FoodHub is a **server-side web application** built for a complete food delivery 
 | **Session**  | PHP Native Sessions (`session_start()`)                       |
 | **Server**   | Apache (XAMPP local development stack)                        |
 
-> **100% Procedural PHP**: Zero classes, zero OOP objects (`->` / `new`), zero namespaces, and zero PDO. All queries use procedural `mysqli_*` functions with **prepared statements** (`mysqli_prepare`, `mysqli_bind_param`, `mysqli_execute`, `mysqli_get_result`).
+> **100% Procedural PHP**: Zero classes, zero OOP objects (`->` / `new`), zero namespaces, zero PDO, and zero AJAX. All queries use procedural `mysqli_*` functions with **prepared statements** (`mysqli_prepare`, `mysqli_bind_param`, `mysqli_execute`, `mysqli_get_result`). All form submissions use standard HTML `POST`/`GET` requests with header redirects.
 
 ---
 
@@ -141,7 +141,7 @@ FoodHub/
 │
 ├── assets/
 │   └── js/
-│       └── manager.js                   # Manager AJAX status updates & modal handling
+│       └── manager.js                   # Modal helpers (no AJAX)
 │
 ├── style.css                            # Global FoodHub stylesheet (Bootstrap 5 + custom design system)
 ├── index.php                            # Root entrypoint router
@@ -168,7 +168,7 @@ FoodHub/
 - **Restaurant Onboarding**: Register new restaurants (starts with `Pending` status until Admin approval).
 - **Restaurant Management**: Update address, phone, cuisine, and description; toggle availability (`Open`/`Closed`) independently of admin status; delete restaurants with confirmation safeguards.
 - **Menu Management**: Add, view, edit, and soft-delete menu items (`is_deleted = 1` flag ensures order history integrity).
-- **Order Fulfillment & Live Queue**:
+- **Order Fulfillment Queue**:
   - View incoming customer orders in BDT Taka (`৳`).
   - Accept or reject pending orders (`Pending` $\rightarrow$ `Preparing` / `Cancelled`).
   - Update preparation status (`Preparing` $\rightarrow$ `Ready for Delivery`).

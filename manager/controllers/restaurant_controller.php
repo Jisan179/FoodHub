@@ -64,10 +64,12 @@ switch ($action) {
             $is_open = intval($_POST['is_open'] ?? 0);
             
             if (toggleRestaurantAvailability($conn, $restaurant_id, $user_id, $is_open)) {
-                echo json_encode(['success' => true, 'is_open' => $is_open]);
+                $status_str = $is_open ? "Open for orders" : "Closed";
+                $_SESSION['success'] = "Restaurant availability updated to $status_str.";
             } else {
-                echo json_encode(['success' => false, 'message' => 'Failed to toggle availability.']);
+                $_SESSION['error'] = "Failed to toggle availability.";
             }
+            header('Location: ../views/dashboard.php');
             exit();
         }
         break;

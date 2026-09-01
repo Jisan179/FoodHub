@@ -41,6 +41,21 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
         </div>
     </div>
 
+    <!-- Alert Messages -->
+    <?php if (isset($_SESSION['success'])): ?>
+        <div class="alert alert-success">
+            <span>✅</span>
+            <span><?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?></span>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-error">
+            <span>⚠️</span>
+            <span><?php echo htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?></span>
+        </div>
+    <?php endif; ?>
+
     <div style="display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start;">
         
         <!-- Pending Orders Column -->
@@ -75,12 +90,21 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
                                 </div>
 
                                 <div style="display: flex; gap: 10px;">
-                                    <button onclick="updateOrderStatus(<?php echo $order['order_id']; ?>, 'Preparing')" class="btn btn-primary" style="flex: 2;">
-                                        Accept Order
-                                    </button>
-                                    <button onclick="updateOrderStatus(<?php echo $order['order_id']; ?>, 'Cancelled')" class="btn btn-danger" style="flex: 1;">
-                                        Reject
-                                    </button>
+                                    <form action="../controllers/order_controller.php?action=update_status" method="POST" style="flex: 2;">
+                                        <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
+                                        <input type="hidden" name="status" value="Preparing">
+                                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                            Accept Order
+                                        </button>
+                                    </form>
+                                    
+                                    <form action="../controllers/order_controller.php?action=update_status" method="POST" style="flex: 1;" onsubmit="return confirm('Are you sure you want to reject this order?');">
+                                        <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
+                                        <input type="hidden" name="status" value="Cancelled">
+                                        <button type="submit" class="btn btn-danger" style="width: 100%;">
+                                            Reject
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -113,9 +137,13 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
                                     Customer: <?php echo htmlspecialchars($k_order['customer_name']); ?>
                                 </p>
                                 <?php if (!$is_ready): ?>
-                                    <button onclick="updateOrderStatus(<?php echo $k_order['order_id']; ?>, 'Ready for Delivery')" class="btn btn-primary btn-sm" style="width: 100%;">
-                                        Mark as Ready for Delivery
-                                    </button>
+                                    <form action="../controllers/order_controller.php?action=update_status" method="POST">
+                                        <input type="hidden" name="order_id" value="<?php echo $k_order['order_id']; ?>">
+                                        <input type="hidden" name="status" value="Ready for Delivery">
+                                        <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">
+                                            Mark as Ready for Delivery
+                                        </button>
+                                    </form>
                                 <?php else: ?>
                                     <button class="btn btn-sm btn-secondary" disabled style="width: 100%; opacity: 0.7;">
                                         Waiting for Rider Pickup
