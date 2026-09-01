@@ -1,63 +1,84 @@
-﻿# 🍔 FoodHub - Food Ordering and Delivery Platform
-## Module: Admin Management Portal (Pure Procedural PHP & MySQLi)
+﻿# 🍔 FoodHub — Food Ordering & Delivery Platform
 
-FoodHub is a **server-side web application** built for managing a food delivery platform. It features a complete **Admin Portal** built using **pure procedural PHP and procedural MySQLi** (with strictly zero classes, zero OOP objects, and zero PDO). The codebase separates database operations (**models**), presentation templates (**views**), and request handlers (**controllers**) into clean, user-specific role directories using standard PHP file includes (`include`/`require`).
+## Authentication, Role-Based Access Control (RBAC) & User Management System
+
+FoodHub is a **server-side web application** built for a complete food delivery platform experience. It is built using **pure procedural PHP and procedural MySQLi** (zero classes, zero OOP, zero PDO) with a clean **MVC-style separation** of database operations (**models**), presentation templates (**views**), and request handlers (**controllers**) across 4 distinct user roles.
 
 ---
 
 ## 📋 Table of Contents
 
 1. [Tech Stack](#tech-stack)
-2. [Procedural Architecture](#procedural-architecture)
-3. [Project Directory Structure](#project-directory-structure)
-4. [Features](#features)
-5. [Database Setup](#database-setup)
-6. [How to Run Locally](#how-to-run-locally)
-7. [Default Credentials](#default-credentials)
-8. [Security Implementation](#security-implementation)
+2. [User Roles](#user-roles)
+3. [Procedural Architecture](#procedural-architecture)
+4. [Project Directory Structure](#project-directory-structure)
+5. [Features](#features)
+6. [Database Setup](#database-setup)
+7. [How to Run Locally](#how-to-run-locally)
+8. [Default Credentials](#default-credentials)
+9. [Security Implementation](#security-implementation)
 
 ---
 
 ## 🛠 Tech Stack
 
-| Layer        | Technology                                                  |
-|:-------------|:------------------------------------------------------------|
-| **Backend**  | PHP (Pure Procedural PHP, `mysqli_*` procedural functions)  |
-| **Database** | MySQL / MariaDB  (via XAMPP)                                |
-| **Frontend** | HTML5, Vanilla CSS (`assets/css/style.css`)                 |
-| **Session**  | PHP Native Sessions (`session_start()`)                     |
-| **Server**   | Apache (XAMPP local development stack)                      |
+| Layer        | Technology                                                    |
+|:-------------|:--------------------------------------------------------------|
+| **Backend**  | PHP  (Pure Procedural, `mysqli_*` procedural functions)       |
+| **Database** | MySQL / MariaDB (via XAMPP)                                   |
+| **Frontend** | HTML5, Bootstrap 5, Vanilla CSS (`assets/css/style.css`)      |
+| **Fonts**    | Plus Jakarta Sans (Google Fonts)                              |
+| **Session**  | PHP Native Sessions (`session_start()`)                       |
+| **Server**   | Apache (XAMPP local development stack)                        |
 
-> **100% Procedural PHP**: Zero classes, zero OOP objects (`->` / `new`), zero namespaces, and zero PDO. All queries use procedural `mysqli_*` functions (`mysqli_connect`, `mysqli_query`, `mysqli_fetch_assoc`, `mysqli_real_escape_string`, `mysqli_num_rows`, `mysqli_error`).
+> **100% Procedural PHP**: Zero classes, zero OOP objects (`->` / `new`), zero namespaces, and zero PDO. All queries use procedural `mysqli_*` functions with **prepared statements** (`mysqli_prepare`, `mysqli_bind_param`, `mysqli_execute`, `mysqli_get_result`).
+
+---
+
+## 👥 User Roles
+
+The system supports **4 distinct user roles** with separate dashboards, access guards, and capabilities:
+
+| Role | Description |
+|:---|:---|
+| **Administrator** | Full platform control: user management, restaurant approvals, order oversight |
+| **Customer** | Browse restaurants, place orders, track delivery status |
+| **Restaurant Manager** | Manage own restaurant's menu items and incoming orders |
+| **Rider** | Claim available deliveries, update delivery status, track earnings |
+
+> Administrator accounts **cannot be created via public registration**. They must be provisioned by an existing Admin through the Admin User Management panel.
 
 ---
 
 ## 🏛 Procedural Architecture
 
-The application is structured into clear procedural layers connected by standard file includes (`require_once` / `include_once`):
+The application is structured into clear procedural layers connected by `require_once` / `include_once` file includes:
 
-- **Database Connection (`config/db.php`)**: Establishes a procedural connection `$conn = mysqli_connect(...)` with UTF-8 (`utf8mb4`) charset.
-- **Models Layer (`models/`)**: Encapsulates 100% of database queries inside procedural functions:
-  - `user_model.php`: `find_user_by_username()`, `find_user_by_id()`, `check_user_exists()`, `create_user()`, `get_all_users()`, `delete_user()`, `count_total_users()`, `get_active_riders()`.
-  - `restaurant_model.php`: `get_all_restaurants()`, `get_pending_restaurants()`, `count_pending_restaurants()`, `update_restaurant_status()`.
-  - `order_model.php`: `get_all_orders()`, `get_recent_orders()`, `count_total_orders()`, `get_total_revenue()`, `update_order_status()`.
-  - `delivery_model.php`: `get_delivery_by_order_id()`, `upsert_delivery()`.
-- **Controllers Layer (`controllers/`)**: Procedural request and business logic handlers:
-  - `auth/auth_check.php`: Procedural route guard checking `$_SESSION['role'] === 'Admin'`.
-  - `auth/login_controller.php`: Authenticates credentials (plain-text and `password_verify` support) and manages sessions.
-  - `auth/logout_controller.php`: Destroys active sessions and redirects to login.
-  - `admin/dashboard_controller.php`: Gathers metrics, pending approvals, and recent orders.
-  - `admin/user_controller.php`: Handles user creation (with duplicate validation), deletion (with self-delete protection), and search queries.
-  - `admin/restaurant_controller.php`: Handles restaurant approvals and whitelist-validated status updates.
-  - `admin/order_controller.php`: Handles order fulfillment status and rider delivery assignments.
-- **Views Layer (`views/`)**: Clean HTML presentation templates decoupled from raw SQL queries:
-  - `partials/`: `header.php`, `navbar.php` (with dynamic active link highlighting), `footer.php`.
-  - `auth/login.php`: Admin login interface.
-  - `admin/dashboard.php`: Dashboard analytics cards, pending reviews, and recent orders.
-  - `admin/users.php`: User creation form, search filter, and user records table.
-  - `admin/restaurants.php`: Restaurant approvals table with inline status update controls.
-  - `admin/orders.php`: Order fulfillment table with inline status & rider assignments.
-- **Role Entrypoints (`admin/`)**: User-specific URL endpoints (`admin/dashboard.php`, `admin/users.php`, `admin/restaurants.php`, `admin/orders.php`) that include the respective views.
+- **Database Connection (`config/db.php`)**: Establishes a single procedural `$conn = mysqli_connect(...)` with `utf8mb4` charset.
+- **RBAC Middleware (`includes/auth_check.php`)**: Universal role guard functions:
+  - `check_auth($allowed_roles)`: Restricts page access to specified roles.
+  - `is_logged_in()`: Validates active session state.
+  - `get_logged_user()`: Retrieves full profile of the current user.
+  - `get_user_dashboard_url($role)`: Maps a role to its destination dashboard route.
+- **Models Layer (`models/`)**: 100% of SQL queries encapsulated in procedural functions (prepared statements throughout):
+  - `user_model.php`: Authentication, CRUD, search, pagination, role filtering, stats.
+  - `restaurant_model.php`: Listings, pending approvals, status updates.
+  - `order_model.php`: Order queries, status management, revenue calculations.
+  - `delivery_model.php`: Delivery tracking, claim delivery, status updates, rider earnings.
+- **Controllers Layer (`controllers/`)**: Procedural request handlers / business logic:
+  - `auth/login_controller.php`: Credential check (username or email), session init, remember-me cookie.
+  - `auth/logout_controller.php`: Session destroy, cookie clear, redirect.
+  - `auth/register_controller.php`: Registration validation, duplicate check, `password_hash()`.
+  - `auth/profile_controller.php`: Profile update, account deactivation / deletion.
+  - `auth/change_password_controller.php`: Current password verification + new hash update.
+  - `auth/forgot_password_controller.php`: Two-step account recovery.
+  - `dashboard_controller.php`: Role-based dashboard dispatcher.
+  - `admin/dashboard_controller.php`: Platform KPI aggregation.
+  - `admin/user_controller.php`: User CRUD, live search, pagination, duplicate protection.
+  - `admin/restaurant_controller.php`: Approval and status update handler.
+  - `admin/order_controller.php`: Order fulfillment and rider assignment.
+- **Views Layer (`views/`)**: Clean HTML templates decoupled from SQL logic.
+- **Role Entrypoints (`admin/`, root `*.php`)**: URL entry files that include the corresponding controller + view.
 
 ---
 
@@ -67,53 +88,82 @@ The application is structured into clear procedural layers connected by standard
 FoodHub/
 │
 ├── config/
-│   └── db.php                       # Procedural mysqli_connect() database connection
+│   └── db.php                           # Procedural mysqli_connect() database connection
 │
-├── models/                          # Pure procedural SQL query functions
-│   ├── delivery_model.php           # Delivery lookups and upsert queries
-│   ├── order_model.php              # Orders listing, revenue calculations, & status updates
-│   ├── restaurant_model.php         # Restaurant listings, pending counts, & status updates
-│   └── user_model.php               # User authentication, CRUD, search, & riders
+├── includes/
+│   └── auth_check.php                   # RBAC middleware: check_auth(), is_logged_in(), get_logged_user()
 │
-├── controllers/                     # Procedural business logic handlers
+├── models/                              # Pure procedural SQL query functions (prepared statements)
+│   ├── user_model.php                   # User auth, CRUD, search, pagination, role stats
+│   ├── restaurant_model.php             # Restaurant listings, pending approvals, status updates
+│   ├── order_model.php                  # Orders, revenue, status management
+│   └── delivery_model.php               # Delivery tracking, claim, rider stats
+│
+├── controllers/                         # Procedural business logic handlers
 │   ├── auth/
-│   │   ├── auth_check.php           # Session guard redirecting unauthorized users
-│   │   ├── login_controller.php     # Login validation & session initialization
-│   │   └── logout_controller.php    # Session destroy & redirect
+│   │   ├── auth_check.php               # Admin-level session guard
+│   │   ├── login_controller.php         # Login: credential check, session init, remember-me
+│   │   ├── logout_controller.php        # Session destroy & cookie clear
+│   │   ├── register_controller.php      # Registration validation & password hashing
+│   │   ├── profile_controller.php       # Profile update & account deletion
+│   │   ├── change_password_controller.php # Current password check + hash update
+│   │   └── forgot_password_controller.php # Two-step account recovery
+│   ├── dashboard_controller.php         # Role-based dashboard dispatcher
 │   └── admin/
-│       ├── dashboard_controller.php # Gathers dashboard KPIs & recent activity
-│       ├── order_controller.php     # Order status & rider delivery assignment handler
-│       ├── restaurant_controller.php# Restaurant status update handler
-│       └── user_controller.php      # User creation, deletion, & search handler
+│       ├── dashboard_controller.php     # Platform KPIs, pending approvals, recent orders
+│       ├── user_controller.php          # User creation, deletion, live search, pagination
+│       ├── restaurant_controller.php    # Restaurant status update handler
+│       └── order_controller.php        # Order fulfillment & rider assignment handler
 │
-├── views/                           # Procedural HTML view templates
+├── views/                               # HTML presentation templates
 │   ├── auth/
-│   │   └── login.php                # Admin login form template
+│   │   ├── login.php                    # Login form: username/email, password toggle, remember-me
+│   │   ├── register.php                 # Registration form: name, email, phone, role selector
+│   │   ├── profile.php                  # View/edit personal details, deactivate account
+│   │   ├── change-password.php          # Change password form
+│   │   └── forgot-password.php          # Password recovery form
 │   ├── admin/
-│   │   ├── dashboard.php            # Admin dashboard metrics & tables template
-│   │   ├── orders.php               # Order tracking & inline update template
-│   │   ├── restaurants.php          # Restaurant approvals template
-│   │   └── users.php                # User creation & management template
+│   │   ├── dashboard.php                # Platform metrics, user stats, pending restaurants
+│   │   ├── users.php                    # User table: search, role/status filter, pagination
+│   │   ├── user-create.php              # Admin user provisioning form (all roles)
+│   │   ├── user-edit.php                # Admin user edit: details, role, status, password
+│   │   ├── orders.php                   # Order tracking & inline status update table
+│   │   └── restaurants.php              # Restaurant approval & status management table
+│   ├── customer/
+│   │   └── dashboard.php                # Stats, live order tracking, restaurant catalog
+│   ├── manager/
+│   │   └── dashboard.php                # Kitchen orders queue, menu items, revenue stats
+│   ├── rider/
+│   │   └── dashboard.php                # Available deliveries, active trips, earnings summary
 │   └── partials/
-│       ├── footer.php               # Global footer markup
-│       ├── header.php               # Global HTML head & stylesheet links
-│       └── navbar.php               # Navigation bar with dynamic active states
+│       ├── header.php                   # Global HTML head, stylesheet & font links
+│       ├── navbar.php                   # Role-aware navbar: role badge, nav links
+│       └── footer.php                   # Global footer & Bootstrap JS bundle
 │
 ├── assets/
 │   └── css/
-│       └── style.css                # Global stylesheet
+│       └── style.css                    # Global FoodHub stylesheet (Bootstrap 5 + custom)
 │
-├── admin/                           # Role-specific entrypoints
-│   ├── dashboard.php                # Access admin dashboard
-│   ├── orders.php                   # Access order & delivery tracking
-│   ├── restaurants.php              # Access restaurant management
-│   └── users.php                    # Access user management
+├── admin/                               # Admin role entrypoints
+│   ├── dashboard.php
+│   ├── users.php
+│   ├── user-create.php
+│   ├── user-edit.php
+│   ├── user-delete.php
+│   ├── orders.php
+│   └── restaurants.php
 │
-├── index.php                        # Root entrypoint redirect
-├── login.php                        # Root login entrypoint
-├── logout.php                       # Root logout entrypoint
-├── schema.sql                       # MySQL schema (6 tables) & initial seed data
-└── README.md                        # Documentation & setup guide
+├── index.php                            # Root entrypoint redirect
+├── login.php                            # Login entrypoint
+├── logout.php                           # Logout entrypoint
+├── register.php                         # Public registration entrypoint
+├── dashboard.php                        # Dashboard router entrypoint
+├── profile.php                          # Profile management entrypoint
+├── change-password.php                  # Change password entrypoint
+├── forgot-password.php                  # Password recovery entrypoint
+├── database.sql                         # Full schema (6 tables) + seed data for all 4 roles
+├── schema.sql                           # Synchronized schema copy
+└── README.md                            # This documentation file
 ```
 
 ---
@@ -121,33 +171,58 @@ FoodHub/
 ## ✨ Features
 
 ### 🔐 Authentication
-- Admin login portal with username + password validation.
-- Supports both plain-text seed passwords and `password_hash()` / `password_verify()`.
-- Procedural auth guard (`controllers/auth/auth_check.php`) included on all admin controllers.
-- Safe logout terminating session state.
+- **Login (`login.php`)**: Supports login via username **or** email address.
+  - Password visibility toggle button.
+  - "Remember Me" checkbox with 30-day cookie persistence.
+  - Automatic role-based redirection to each user's personalized dashboard.
+  - Link to registration and password recovery.
+- **Registration (`register.php`)**: Public registration for `Customer`, `Restaurant Manager`, and `Rider` roles.
+  - Full Name, Username, Email, Phone, Password, Confirm Password, and Role fields.
+  - Administrator accounts are blocked from public self-registration.
+  - `password_hash($password, PASSWORD_DEFAULT)` for secure credential storage.
+- **Logout (`logout.php`)**: Destroys session, clears remember-me cookie, and redirects.
+- **Profile Management (`profile.php`)**: Edit personal details and optionally deactivate or delete your own account.
+- **Change Password (`change-password.php`)**: Enforces verification of the current password before accepting a new one.
+- **Forgot Password (`forgot-password.php`)**: Two-step recovery — find account by username or email, then set a new password.
 
-### 📊 Admin Dashboard
-- Computed metrics using SQL `COUNT()` and `SUM()`:
-  - Total registered users across all roles.
-  - Pending restaurant approval count.
-  - Total all-time orders.
-  - Total revenue (excluding cancelled orders).
-- Quick-action panel for restaurants awaiting approval.
+### 📊 Administrator Dashboard
+- Platform-wide KPI cards: total users, pending restaurant approvals, total orders, total revenue.
+- User distribution breakdown by role.
+- Pending restaurant approvals quick-action panel.
 - Recent orders table with colour-coded status badges.
 
-### 👥 User Management
-- **Create User Account**: Field validation for Name, Username, Email, Password, and Role (`Customer`, `Restaurant Manager`, `Rider`, `Admin`).
-- **Duplicate Prevention**: Checks for existing usernames and email addresses before insertion.
-- **Search**: Multi-column search across name, username, email, role, and phone.
-- **Delete Safeguard**: Admins are prevented from deleting their own active account.
+### 👥 Admin User Management (`admin/users.php`)
+- **Live Search**: Real-time multi-column search across name, username, email, phone, and address.
+- **Filter by Role**: `All`, `Administrator`, `Customer`, `Restaurant Manager`, `Rider`.
+- **Filter by Status**: `All`, `Active`, `Inactive`, `Suspended`.
+- **Sorting & Pagination**: Sortable columns with configurable results per page.
+- **Create User** (`admin/user-create.php`): Provision any role including Administrator.
+- **Edit User** (`admin/user-edit.php`): Update profile, reassign role, toggle status, optional password reset.
+- **Delete User** (`admin/user-delete.php`): Protected handler — prevents self-deletion of an active Administrator.
 
-### 🏪 Restaurant Approvals & Management
+### 🛒 Customer Dashboard
+- Summary stats: total orders placed, active orders, completed orders, total amount spent.
+- Live order tracking with status badges (`Pending`, `Preparing`, `Out for Delivery`, `Delivered`, `Cancelled`).
+- Partner restaurants catalog.
+- Full order history table.
+
+### 🏪 Restaurant Manager Dashboard
+- KPI cards: incoming orders, total orders, revenue earned, total menu items.
+- Live kitchen orders queue with one-click status transitions.
+- Full menu items listing for the managed restaurant.
+
+### 🛵 Rider Dashboard
+- Available deliveries queue with **"Accept Delivery"** claim button.
+- Active deliveries management with **"Mark Picked Up"** and **"Mark Delivered"** transitions.
+- Delivery history and commission earnings summary.
+
+### 🏪 Restaurant Approvals & Management (Admin)
 - Lists all partner restaurants with owner details, contact info, and computed menu item counts.
-- **Inline Status Updates**: Dropdown updates validated against a server-side whitelist (`Pending`, `Approved`, `Rejected`, `Suspended`).
+- Inline status updates validated against a server-side whitelist (`Pending`, `Approved`, `Rejected`, `Suspended`).
 
-### 📦 Orders & Delivery Tracking
-- Comprehensive order table joining orders, customers, restaurants, deliveries, and assigned riders.
-- **Inline Order & Delivery Update**: Allows simultaneous updating of order status, delivery status, and rider assignment with automatic delivery record upsertion.
+### 📦 Orders & Delivery Tracking (Admin)
+- Comprehensive order table joining orders, customers, restaurants, deliveries, and riders.
+- Inline order status and delivery status updates with automatic delivery record upsertion.
 
 ---
 
@@ -155,36 +230,38 @@ FoodHub/
 
 The database contains **6 relational tables**:
 
-| Table           | Description                                                       |
-|:----------------|:------------------------------------------------------------------|
-| `users`         | Accounts: Admin, Customer, Restaurant Manager, Rider              |
-| `restaurants`   | Partner restaurants linked to a `Restaurant Manager` user         |
-| `food_items`    | Menu items belonging to a restaurant                              |
-| `orders`        | Customer orders referencing a customer and a restaurant           |
-| `order_items`   | Individual line items within each order                           |
-| `deliveries`    | Delivery tracking records linking orders to Riders                |
+| Table         | Description                                                     |
+|:--------------|:----------------------------------------------------------------|
+| `users`       | Accounts: Administrator, Customer, Restaurant Manager, Rider    |
+| `restaurants` | Partner restaurants linked to a `Restaurant Manager` user       |
+| `food_items`  | Menu items belonging to a restaurant                            |
+| `orders`      | Customer orders referencing a customer and a restaurant         |
+| `order_items` | Individual line items within each order                         |
+| `deliveries`  | Delivery tracking records linking orders to Riders              |
 
 ### Import Steps (XAMPP / phpMyAdmin)
 
 1. Start **Apache** and **MySQL** in the XAMPP Control Panel.
 2. Open **`http://localhost/phpmyadmin`** in your browser.
-3. Select the **"Import"** tab.
-4. Choose `schema.sql` from the FoodHub workspace.
-5. Click **"Go"** to create the `foodhub_db` database and seed data.
+3. Create a new database named **`foodhub_db`** (or let the SQL file create it).
+4. Select the **"Import"** tab.
+5. Choose `database.sql` from the FoodHub workspace.
+6. Click **"Go"** to create all tables and seed test data.
 
 ---
 
 ## ▶ How to Run Locally
 
-1. Place the project in XAMPP web root:
+1. Place the project in the XAMPP web root:
    ```
    C:\xampp\htdocs\FoodHub\
    ```
-2. Ensure database configuration in `config/db.php` matches your local MySQL server:
+2. Ensure database configuration in `config/db.php` matches your local MySQL:
    ```php
    $conn = mysqli_connect("localhost", "root", "", "foodhub_db");
    ```
-3. Open your browser and navigate to:
+3. Import `database.sql` via phpMyAdmin (see above).
+4. Open your browser and navigate to:
    ```
    http://localhost/FoodHub/
    ```
@@ -194,22 +271,24 @@ The database contains **6 relational tables**:
 
 ## 🔑 Default Credentials
 
-| Role                | Username    | Password      |
-|:--------------------|:------------|:--------------|
-| **Admin**           | `admin`     | `admin123`    |
-| Customer            | `customer1` | `customer123` |
-| Customer            | `customer2` | `customer123` |
-| Restaurant Manager  | `manager1`  | `manager123`  |
-| Restaurant Manager  | `manager2`  | `manager123`  |
-| Rider               | `rider1`    | `rider123`    |
-
-> ⚠️ Only the `Admin` role can log into this portal.
+| Role                   | Username    | Password      |
+|:-----------------------|:------------|:--------------|
+| **Administrator**      | `admin`     | `admin123`    |
+| **Customer**           | `customer1` | `customer123` |
+| **Customer**           | `customer2` | `customer123` |
+| **Restaurant Manager** | `manager1`  | `manager123`  |
+| **Restaurant Manager** | `manager2`  | `manager123`  |
+| **Rider**              | `rider1`    | `rider123`    |
 
 ---
 
 ## 🔒 Security Implementation
 
-- **SQL Injection Prevention**: All inputs are sanitized using `mysqli_real_escape_string($conn, ...)` and integer casting `intval(...)`.
-- **XSS Protection**: All view outputs use `htmlspecialchars()` before HTML rendering.
-- **Role Verification**: Non-admin users attempting to log in receive an access denial, and unauthenticated requests are redirected.
-- **Whitelist Validation**: Status update endpoints validate values against defined status arrays.
+- **SQL Injection Prevention**: All user-facing queries use **prepared statements** (`mysqli_prepare` + `mysqli_bind_param`).
+- **XSS Protection**: All view output uses `htmlspecialchars()` before HTML rendering.
+- **Password Hashing**: All passwords stored with `password_hash($password, PASSWORD_DEFAULT)` (bcrypt).
+- **RBAC Guards**: `check_auth($allowed_roles)` is included at the top of every protected page, redirecting unauthorized access.
+- **Self-Deletion Protection**: Administrators cannot delete their own account from the User Management panel.
+- **Role Registration Lock**: Public registration form does not expose the `Administrator` role option.
+- **Whitelist Validation**: All status-update endpoints validate values against defined status arrays before writing to the database.
+- **Session Security**: Sessions are destroyed completely on logout (including cookie and session data), with redirect to prevent back-button session reuse.
