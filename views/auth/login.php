@@ -8,14 +8,13 @@ require_once __DIR__ . '/../partials/header.php';
 <div class="login-container">
     <div class="login-card">
         <div class="login-header" style="width: 100%; text-align: center; margin-bottom: 28px;">
-            <div class="login-logo" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin: 0 auto 8px auto;">
-            <span>🍔</span>
-                <span>FoodHub</span>
+            <div class="login-logo" style="position: relative; display: inline-block; font-size: 1.75rem; font-weight: 700; color: #ff5722; margin-bottom: 8px;">
+                <span style="position: absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%); font-size: 1.6rem; line-height: 1;">🍔</span>
+                <span style="display: inline-block; line-height: 1;">FoodHub</span>
             </div>
-            <h2 style="width: 100%; text-align: center; font-size: 1.35rem; font-weight: 700; margin-bottom: 4px;">Portal Login</h2>
+            <h2 style="width: 100%; text-align: center; font-size: 1.35rem; font-weight: 700; margin: 0 0 4px 0;">Portal Login</h2>
             <p class="login-subtitle" style="width: 100%; text-align: center; margin: 0 auto;">Enter your administrative credentials to continue</p>
-        </div>
-
+        </div>  
         <?php if (!empty($error)): ?>
             <div class="alert alert-error">
                 <span>⚠️</span>
