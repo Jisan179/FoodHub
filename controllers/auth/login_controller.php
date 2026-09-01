@@ -7,10 +7,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Redirect if already logged in as Admin
-if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') {
-    header("Location: admin/dashboard.php");
-    exit();
+// Redirect if already logged in
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'Admin') {
+        header("Location: admin/dashboard.php");
+        exit();
+    } elseif ($_SESSION['role'] === 'Customer') {
+        header("Location: customer/dashboard.php");
+        exit();
+    }
 }
 
 $error = "";
@@ -41,8 +46,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     header("Location: admin/dashboard.php");
                     exit();
+                } elseif ($user['role'] === 'Customer') {
+                    $_SESSION['user_id']  = $user['user_id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['role']     = $user['role'];
+                    $_SESSION['name']     = $user['name'];
+
+                    header("Location: customer/dashboard.php");
+                    exit();
                 } else {
-                    $error = "Access denied. Only Admin accounts can access this portal (Current role: " . htmlspecialchars($user['role']) . ").";
+                    $error = "Access denied for role: " . htmlspecialchars($user['role']) . ".";
                 }
             } else {
                 $error = "Invalid username or password.";
