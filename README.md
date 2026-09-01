@@ -12,7 +12,6 @@ FoodHub is a delivery management application for a food ordering platform. In th
 - available delivery offers and active assignment tracking
 - pickup and delivery status transitions
 - delivery history and rider earning summary
-- JSON-based AJAX interaction for delivery actions
 
 The implementation keeps the project simple and maintainable by separating concerns into:
 
