@@ -11,7 +11,7 @@ require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../models/user_model.php';
 require_once __DIR__ . '/../../includes/auth_check.php';
 
-// If already logged in, redirect to their personalized dashboard
+// Redirect if already logged in
 if (is_logged_in()) {
     header("Location: " . get_user_dashboard_url());
     exit();
@@ -86,7 +86,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     header("Location: " . $redirect_url);
                     exit();
                 } else {
-                    $error = "Invalid credentials. Please verify your password and try again.";
+                    $error = "Invalid password. Please check your credentials and try again.";
                 }
             }
         } else {

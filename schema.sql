@@ -1,11 +1,14 @@
 -- ==========================================================
--- FoodHub Database Schema & Initial Seed Data
+-- FoodHub Unified Database Schema & Initial Seed Data
 -- ==========================================================
 
 CREATE DATABASE IF NOT EXISTS foodhub_db;
 USE foodhub_db;
 
 -- 1. Drop existing tables if they exist in dependency order
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS cart;
+DROP TABLE IF EXISTS favorites;
 DROP TABLE IF EXISTS deliveries;
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
@@ -98,8 +101,46 @@ CREATE TABLE deliveries (
     FOREIGN KEY (rider_id) REFERENCES users(user_id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 8. Favorites Table
+CREATE TABLE favorites (
+    favorite_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    restaurant_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(restaurant_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_customer_restaurant_fav (customer_id, restaurant_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 9. Cart Table
+CREATE TABLE cart (
+    cart_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    item_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES food_items(item_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_customer_cart_item (customer_id, item_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 10. Reviews Table
+CREATE TABLE reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    order_id INT NOT NULL,
+    item_id INT NOT NULL,
+    rating TINYINT NOT NULL,
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES food_items(item_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_customer_order_item_review (customer_id, order_id, item_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ==========================================================
--- SEED DATA
+-- SEED DATA (Default passwords: admin123, customer123, manager123, rider123)
 -- ==========================================================
 
 INSERT INTO users (user_id, name, username, email, phone, role, password, address, status) VALUES
@@ -144,3 +185,15 @@ INSERT INTO deliveries (delivery_id, order_id, rider_id, delivery_status, assign
 (1, 1, NULL, 'Pending Assignment', NULL, NULL),
 (2, 2, 4, 'Assigned', NOW() - INTERVAL 20 MINUTE, NULL),
 (3, 3, 4, 'Delivered', NOW() - INTERVAL 2 HOUR, NOW() - INTERVAL 1 HOUR);
+
+-- Insert Favorites
+INSERT INTO favorites (favorite_id, customer_id, restaurant_id) VALUES
+(1, 2, 1);
+
+-- Insert Cart
+INSERT INTO cart (cart_id, customer_id, item_id, quantity) VALUES
+(1, 2, 4, 2);
+
+-- Insert Reviews
+INSERT INTO reviews (review_id, customer_id, order_id, item_id, rating, comment) VALUES
+(1, 2, 3, 4, 5, 'The double cheeseburger was juicy and packed with flavor! Loved the special sauce.');
