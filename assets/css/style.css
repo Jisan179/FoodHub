@@ -594,3 +594,17 @@ body {
         grid-template-columns: 1fr;
     }
 }
+/* Keep navbar labels on one line; move the menu to its own row on narrower screens */
+.brand-logo, .nav-link, .user-pill { white-space: nowrap; }
+
+@media (max-width: 1150px) {
+    .nav-container { flex-wrap: wrap; height: auto; padding-top: 10px; padding-bottom: 10px; row-gap: 8px; }
+    .nav-menu { order: 3; width: 100%; flex-wrap: wrap; justify-content: center; }
+}
+
+/* Manager order board: two columns on wide screens, one column on small screens */
+.orders-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+
+@media (max-width: 800px) {
+    .orders-layout { grid-template-columns: 1fr; }
+}
