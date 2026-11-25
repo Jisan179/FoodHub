@@ -52,7 +52,7 @@ function get_approved_restaurants($conn, $limit = 10) {
             r.address,
             r.phone,
             r.created_at,
-            (SELECT COUNT(*) FROM food_items f WHERE f.restaurant_id = r.restaurant_id AND f.status = 'Available') AS available_items
+            (SELECT COUNT(*) FROM food_items f WHERE f.restaurant_id = r.restaurant_id AND f.status = 'Available' AND f.is_deleted = 0) AS available_items
         FROM restaurants r
         WHERE r.status = 'Approved'
         ORDER BY r.restaurant_id DESC

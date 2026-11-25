@@ -31,7 +31,7 @@ function get_customer_approved_restaurants($conn, $search = null, $customer_id =
             r.address,
             r.phone,
             r.created_at,
-            (SELECT COUNT(*) FROM food_items f WHERE f.restaurant_id = r.restaurant_id AND f.status = 'Available') AS total_items,
+            (SELECT COUNT(*) FROM food_items f WHERE f.restaurant_id = r.restaurant_id AND f.status = 'Available' AND f.is_deleted = 0) AS total_items,
             (SELECT COUNT(*) FROM favorites fav WHERE fav.restaurant_id = r.restaurant_id AND fav.customer_id = $safe_cust_id) AS is_favorite,
             (SELECT AVG(rev.rating) 
              FROM reviews rev 
@@ -73,6 +73,7 @@ function get_customer_restaurant_by_id($conn, $restaurant_id, $customer_id = nul
             r.address,
             r.phone,
             r.created_at,
+            r.is_open,
             (SELECT COUNT(*) FROM favorites fav WHERE fav.restaurant_id = r.restaurant_id AND fav.customer_id = $safe_cust_id) AS is_favorite,
             (SELECT AVG(rev.rating) 
              FROM reviews rev 
@@ -99,7 +100,7 @@ function get_customer_restaurant_by_id($conn, $restaurant_id, $customer_id = nul
  */
 function get_customer_menu_items($conn, $restaurant_id, $category = null) {
     $safe_rest_id = intval($restaurant_id);
-    $where = "f.restaurant_id = $safe_rest_id AND f.status = 'Available'";
+    $where = "f.restaurant_id = $safe_rest_id AND f.status = 'Available' AND f.is_deleted = 0";
 
     if (!empty($category) && $category !== 'All') {
         $safe_cat = mysqli_real_escape_string($conn, trim($category));
@@ -144,7 +145,7 @@ function get_restaurant_categories($conn, $restaurant_id) {
     $sql = "
         SELECT DISTINCT category 
         FROM food_items 
-        WHERE restaurant_id = $safe_rest_id AND status = 'Available'
+        WHERE restaurant_id = $safe_rest_id AND status = 'Available' AND is_deleted = 0
         ORDER BY category ASC
     ";
 
@@ -183,6 +184,7 @@ function search_food_and_restaurants($conn, $query) {
         LEFT JOIN reviews rev ON f.item_id = rev.item_id
         WHERE r.status = 'Approved' 
           AND f.status = 'Available'
+          AND f.is_deleted = 0
           AND (f.name LIKE '%$safe_query%' OR f.description LIKE '%$safe_query%' OR f.category LIKE '%$safe_query%' OR r.name LIKE '%$safe_query%')
         GROUP BY f.item_id
         ORDER BY f.name ASC
@@ -217,12 +219,13 @@ function get_food_item_by_id($conn, $item_id) {
             f.status,
             r.name AS restaurant_name,
             r.status AS restaurant_status,
+            r.is_open AS restaurant_is_open,
             COALESCE(AVG(rev.rating), 0) AS avg_rating,
             COUNT(rev.review_id) AS review_count
         FROM food_items f
         JOIN restaurants r ON f.restaurant_id = r.restaurant_id
         LEFT JOIN reviews rev ON f.item_id = rev.item_id
-        WHERE f.item_id = $safe_id
+        WHERE f.item_id = $safe_id AND f.is_deleted = 0
         GROUP BY f.item_id
         LIMIT 1
     ";
@@ -253,7 +256,7 @@ function get_customer_favorites($conn, $customer_id) {
             r.description,
             r.address,
             r.phone,
-            (SELECT COUNT(*) FROM food_items f WHERE f.restaurant_id = r.restaurant_id AND f.status = 'Available') AS total_items,
+            (SELECT COUNT(*) FROM food_items f WHERE f.restaurant_id = r.restaurant_id AND f.status = 'Available' AND f.is_deleted = 0) AS total_items,
             (SELECT AVG(rev.rating) 
              FROM reviews rev 
              JOIN food_items fi ON rev.item_id = fi.item_id 
@@ -357,7 +360,7 @@ function get_customer_cart($conn, $customer_id) {
             f.description AS item_description,
             f.price,
             f.category,
-            f.status AS item_status,
+            CASE WHEN f.is_deleted = 1 THEN 'Unavailable' ELSE f.status END AS item_status,
             (c.quantity * f.price) AS subtotal,
             r.restaurant_id,
             r.name AS restaurant_name
@@ -432,12 +435,16 @@ function count_cart_items($conn, $customer_id) {
 function add_to_cart($conn, $customer_id, $item_id, $quantity = 1, $clear_if_conflict = false) {
     $safe_cust_id = intval($customer_id);
     $safe_item_id = intval($item_id);
-    $qty = max(1, intval($quantity));
+    $qty = min(50, max(1, intval($quantity)));
 
     // Verify item exists and is Available
     $item = get_food_item_by_id($conn, $safe_item_id);
     if (!$item || $item['status'] !== 'Available' || $item['restaurant_status'] !== 'Approved') {
         return ['status' => 'error', 'message' => 'This food item is currently unavailable.'];
+    }
+
+    if (!intval($item['restaurant_is_open'])) {
+        return ['status' => 'error', 'message' => 'This restaurant is closed right now.'];
     }
 
     // Check single-restaurant constraint
@@ -460,7 +467,7 @@ function add_to_cart($conn, $customer_id, $item_id, $quantity = 1, $clear_if_con
     $sql = "
         INSERT INTO cart (customer_id, item_id, quantity)
         VALUES ($safe_cust_id, $safe_item_id, $qty)
-        ON DUPLICATE KEY UPDATE quantity = quantity + $qty
+        ON DUPLICATE KEY UPDATE quantity = LEAST(50, quantity + $qty)
     ";
 
     if (mysqli_query($conn, $sql)) {
@@ -476,7 +483,7 @@ function add_to_cart($conn, $customer_id, $item_id, $quantity = 1, $clear_if_con
 function update_cart_quantity($conn, $customer_id, $item_id, $quantity) {
     $safe_cust_id = intval($customer_id);
     $safe_item_id = intval($item_id);
-    $qty = intval($quantity);
+    $qty = min(50, intval($quantity));
 
     if ($qty <= 0) {
         return remove_from_cart($conn, $safe_cust_id, $safe_item_id);
@@ -516,7 +523,10 @@ function clear_customer_cart($conn, $customer_id) {
 function place_customer_order($conn, $customer_id, $delivery_address, $payment_method = 'Cash on Delivery') {
     $safe_cust_id = intval($customer_id);
     $safe_address = mysqli_real_escape_string($conn, trim($delivery_address));
-    $safe_payment = mysqli_real_escape_string($conn, trim($payment_method));
+    if (!in_array($payment_method, ['Cash on Delivery', 'Online Payment / Mobile Wallet'], true)) {
+        return ['success' => false, 'error' => 'Please choose a valid payment method.'];
+    }
+    $safe_payment = mysqli_real_escape_string($conn, $payment_method);
 
     if (empty($safe_address)) {
         return ['success' => false, 'error' => 'Please provide a valid delivery address.'];
@@ -532,6 +542,11 @@ function place_customer_order($conn, $customer_id, $delivery_address, $payment_m
 
     $restaurant_id = intval($cart_summary['restaurant_id']);
 
+    $open_check = mysqli_query($conn, "SELECT 1 FROM restaurants WHERE restaurant_id = $restaurant_id AND status = 'Approved' AND is_open = 1");
+    if (!$open_check || mysqli_num_rows($open_check) === 0) {
+        return ['success' => false, 'error' => 'This restaurant is not accepting orders right now.'];
+    }
+
     // Begin atomic transaction
     mysqli_begin_transaction($conn);
 
@@ -544,7 +559,7 @@ function place_customer_order($conn, $customer_id, $delivery_address, $payment_m
         $qty     = intval($cart_entry['quantity']);
 
         // Lock & fetch fresh price
-        $fetch_sql = "SELECT item_id, price, status FROM food_items WHERE item_id = $item_id FOR UPDATE";
+        $fetch_sql = "SELECT item_id, price, status, is_deleted FROM food_items WHERE item_id = $item_id FOR UPDATE";
         $res = mysqli_query($conn, $fetch_sql);
         if (!$res || mysqli_num_rows($res) === 0) {
             mysqli_rollback($conn);
@@ -552,9 +567,9 @@ function place_customer_order($conn, $customer_id, $delivery_address, $payment_m
         }
 
         $food = mysqli_fetch_assoc($res);
-        if ($food['status'] !== 'Available') {
+        if ($food['status'] !== 'Available' || intval($food['is_deleted'])) {
             mysqli_rollback($conn);
-            return ['success' => false, 'error' => "Item #{$item_id} is currently unavailable."];
+            return ['success' => false, 'error' => "{$cart_entry['item_name']} is no longer available. Please remove it from your cart."];
         }
 
         $unit_price = floatval($food['price']);
@@ -784,10 +799,10 @@ function cancel_customer_order($conn, $order_id, $customer_id) {
     mysqli_begin_transaction($conn);
 
     // Update order status
-    $update_ord = "UPDATE orders SET order_status = 'Cancelled' WHERE order_id = $safe_ord_id";
-    if (!mysqli_query($conn, $update_ord)) {
+    $update_ord = "UPDATE orders SET order_status = 'Cancelled' WHERE order_id = $safe_ord_id AND order_status IN ('Pending', 'Preparing')";
+    if (!mysqli_query($conn, $update_ord) || mysqli_affected_rows($conn) !== 1) {
         mysqli_rollback($conn);
-        return ['success' => false, 'message' => 'Failed to update order status: ' . mysqli_error($conn)];
+        return ['success' => false, 'message' => 'This order can no longer be cancelled.'];
     }
 
     // Update delivery status
@@ -1012,12 +1027,27 @@ function get_unreviewed_delivered_items($conn, $customer_id) {
  * Resolve redirection URL safely from customer action endpoints
  */
 function resolve_customer_redirect($url, $default = '../browse_restaurants.php') {
-    if (empty($url)) {
+    if (empty($url) || preg_match('/[\x00-\x1F\\\\]/', $url)) {
         return $default;
     }
-    // Full URL or root-relative path
-    if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0 || strpos($url, '/') === 0) {
-        return $url;
+
+    $parts = parse_url($url);
+    if ($parts === false) {
+        return $default;
+    }
+
+    // Absolute URL (e.g. HTTP_REFERER): accept only our own host, then keep just the path
+    if (isset($parts['scheme']) || isset($parts['host'])) {
+        $host = ($parts['host'] ?? '') . (isset($parts['port']) ? ':' . $parts['port'] : '');
+        if (strcasecmp($host, $_SERVER['HTTP_HOST'] ?? '') !== 0) {
+            return $default;
+        }
+        $url = ($parts['path'] ?? '/') . (isset($parts['query']) ? '?' . $parts['query'] : '');
+    }
+
+    // Root-relative path, but never protocol-relative ("//evil.example")
+    if ($url[0] === '/') {
+        return strpos($url, '//') === 0 ? $default : $url;
     }
     // Already has relative parent prefix
     if (strpos($url, '../') === 0) {
@@ -1026,4 +1056,3 @@ function resolve_customer_redirect($url, $default = '../browse_restaurants.php')
     // Plain filename (e.g. 'favorites.php', 'browse_restaurants.php')
     return '../' . $url;
 }
-
