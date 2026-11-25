@@ -16,10 +16,10 @@ function getOrdersByRestaurants($conn, $restaurant_ids) {
         ORDER BY o.created_at DESC
     ";
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param($types, ...$restaurant_ids);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt = mysqli_prepare($conn, $sql);
+    mysqli_stmt_bind_param($stmt, $types, ...$restaurant_ids);
+    mysqli_stmt_execute($stmt);
+    return mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
 }
 
 function getOrderByIdAndRestaurants($conn, $order_id, $restaurant_ids) {
@@ -36,32 +36,32 @@ function getOrderByIdAndRestaurants($conn, $order_id, $restaurant_ids) {
         WHERE o.order_id = ? AND o.restaurant_id IN ($placeholders)
     ";
 
-    $stmt = $conn->prepare($sql);
+    $stmt = mysqli_prepare($conn, $sql);
     $params = array_merge([$order_id], $restaurant_ids);
-    $stmt->bind_param($types, ...$params);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc();
+    mysqli_stmt_bind_param($stmt, $types, ...$params);
+    mysqli_stmt_execute($stmt);
+    return mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 }
 
 function getOrderItems($conn, $order_id) {
-    $stmt = $conn->prepare("
+    $stmt = mysqli_prepare($conn, "
         SELECT oi.*, f.name as item_name 
         FROM order_items oi
         JOIN food_items f ON oi.item_id = f.item_id
         WHERE oi.order_id = ?
     ");
-    $stmt->bind_param("i", $order_id);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    mysqli_stmt_bind_param($stmt, "i", $order_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
 }
 
 function logOrderStatusChange($conn, $order_id, $old_status, $new_status, $user_id) {
-    $stmt = $conn->prepare("
+    $stmt = mysqli_prepare($conn, "
         INSERT INTO order_status_log (order_id, old_status, new_status, changed_by) 
         VALUES (?, ?, ?, ?)
     ");
-    $stmt->bind_param("issi", $order_id, $old_status, $new_status, $user_id);
-    return $stmt->execute();
+    mysqli_stmt_bind_param($stmt, "issi", $order_id, $old_status, $new_status, $user_id);
+    return mysqli_stmt_execute($stmt);
 }
 
 // Allowed transitions: Pending -> Preparing, Pending -> Cancelled, Preparing -> Ready for Delivery
@@ -86,9 +86,13 @@ function updateOrderStatus($conn, $order_id, $new_status, $restaurant_ids, $user
 
     mysqli_begin_transaction($conn);
 
-    $stmt = mysqli_prepare($conn, "UPDATE orders SET order_status = ? WHERE order_id = ?");
-    mysqli_stmt_bind_param($stmt, "si", $new_status, $order_id);
-    $updated = mysqli_stmt_execute($stmt);
+    $stmt = mysqli_prepare($conn, "UPDATE orders SET order_status = ? WHERE order_id = ? AND order_status = ?");
+    mysqli_stmt_bind_param($stmt, "sis", $new_status, $order_id, $old_status);
+    $updated = mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) === 1;
+
+    if ($updated && $new_status === 'Cancelled') {
+        $updated = mysqli_query($conn, "UPDATE deliveries SET delivery_status = 'Cancelled' WHERE order_id = " . intval($order_id));
+    }
 
     if (!$updated) {
         mysqli_rollback($conn);

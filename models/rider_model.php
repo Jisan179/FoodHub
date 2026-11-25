@@ -74,7 +74,9 @@ function rider_update_delivery($conn, $delivery_id, $rider_id, $action, $note = 
     }
 
     mysqli_begin_transaction($conn);
-    $sql = "SELECT delivery_id, rider_id, delivery_status FROM deliveries WHERE delivery_id = $delivery_id FOR UPDATE";
+    $sql = "SELECT d.delivery_id, d.rider_id, d.delivery_status, o.order_status
+            FROM deliveries d JOIN orders o ON o.order_id = d.order_id
+            WHERE d.delivery_id = $delivery_id FOR UPDATE";
     $result = mysqli_query($conn, $sql);
     $delivery = $result ? mysqli_fetch_assoc($result) : null;
     $rule = $actions[$action];
@@ -83,6 +85,15 @@ function rider_update_delivery($conn, $delivery_id, $rider_id, $action, $note = 
     if (!$delivery || (!$can_claim && (!$owns_delivery || !in_array($delivery['delivery_status'], $rule['from'], true)))) {
         mysqli_rollback($conn);
         return ['ok' => false, 'message' => 'This delivery is unavailable or is not assigned to you.'];
+    }
+
+    if ($action === 'accept' && in_array($delivery['order_status'], ['Cancelled', 'Delivered'], true)) {
+        mysqli_rollback($conn);
+        return ['ok' => false, 'message' => 'This order is already closed.'];
+    }
+    if ($action === 'pickup' && !in_array($delivery['order_status'], ['Ready for Delivery', 'Out for Delivery'], true)) {
+        mysqli_rollback($conn);
+        return ['ok' => false, 'message' => 'The restaurant has not marked this order Ready for Delivery yet.'];
     }
 
     $safe_note = mysqli_real_escape_string($conn, $note);
@@ -99,6 +110,20 @@ function rider_update_delivery($conn, $delivery_id, $rider_id, $action, $note = 
         }
         mysqli_commit($conn);
         return ['ok' => true, 'message' => 'Delivery information updated.'];
+    }
+
+    if ($action === 'cancel') {
+        // A rider giving up a trip releases it back to the queue; the customer's order stays alive
+        $note_sql = $note === '' ? 'NULL' : "'$safe_note'";
+        $ok = mysqli_query($conn, "UPDATE deliveries SET rider_id = NULL, delivery_status = 'Pending Assignment', assigned_at = NULL, pickup_time = NULL, rider_note = $note_sql WHERE delivery_id = $delivery_id")
+            && mysqli_query($conn, "INSERT INTO delivery_status_history (delivery_id, rider_id, status, note) VALUES ($delivery_id, $rider_id, 'Cancelled', $note_sql)")
+            && mysqli_query($conn, "UPDATE orders o JOIN deliveries d ON d.order_id = o.order_id SET o.order_status = 'Ready for Delivery' WHERE d.delivery_id = $delivery_id AND o.order_status = 'Out for Delivery'");
+        if (!$ok) {
+            mysqli_rollback($conn);
+            return ['ok' => false, 'message' => 'Unable to release the delivery.'];
+        }
+        mysqli_commit($conn);
+        return ['ok' => true, 'message' => 'Delivery released. Another rider can now accept it.'];
     }
 
     $status = mysqli_real_escape_string($conn, $rule['to']);
@@ -120,7 +145,12 @@ function rider_update_delivery($conn, $delivery_id, $rider_id, $action, $note = 
     $order_status = $rule['to'] === 'Picked Up' ? 'Out for Delivery' : ($rule['to'] === 'Delivered' ? 'Delivered' : null);
     if ($order_status !== null) {
         $safe_order_status = mysqli_real_escape_string($conn, $order_status);
-        mysqli_query($conn, "UPDATE orders o JOIN deliveries d ON d.order_id = o.order_id SET o.order_status = '$safe_order_status' WHERE d.delivery_id = $delivery_id");
+        // Cash is collected at the door, so a delivered order is also a paid order
+        $paid_clause = $order_status === 'Delivered' ? ", o.payment_status = 'Paid'" : '';
+        if (!mysqli_query($conn, "UPDATE orders o JOIN deliveries d ON d.order_id = o.order_id SET o.order_status = '$safe_order_status'$paid_clause WHERE d.delivery_id = $delivery_id")) {
+            mysqli_rollback($conn);
+            return ['ok' => false, 'message' => 'Unable to update the order status.'];
+        }
     }
     mysqli_commit($conn);
     return ['ok' => true, 'message' => 'Delivery status updated to ' . $rule['to'] . '.'];

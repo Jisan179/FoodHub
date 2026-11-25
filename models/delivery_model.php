@@ -42,7 +42,7 @@ function get_available_deliveries($conn) {
         JOIN restaurants r ON o.restaurant_id = r.restaurant_id
         JOIN users u ON o.customer_id = u.user_id
         LEFT JOIN deliveries d ON o.order_id = d.order_id
-        WHERE (d.rider_id IS NULL OR d.delivery_status = 'Pending Assignment')
+        WHERE d.rider_id IS NULL AND d.delivery_status = 'Pending Assignment'
           AND o.order_status IN ('Pending', 'Preparing', 'Ready for Delivery')
         ORDER BY o.order_id DESC
     ";
@@ -113,7 +113,8 @@ function get_rider_stats($conn, $rider_id) {
         SELECT 
             COUNT(*) AS total_assigned,
             SUM(CASE WHEN delivery_status IN ('Assigned', 'Picked Up') THEN 1 ELSE 0 END) AS active_deliveries,
-            SUM(CASE WHEN delivery_status = 'Delivered' THEN 1 ELSE 0 END) AS completed_deliveries
+            SUM(CASE WHEN delivery_status = 'Delivered' THEN 1 ELSE 0 END) AS completed_deliveries,
+            COALESCE(SUM(CASE WHEN delivery_status = 'Delivered' THEN rider_earning ELSE 0 END), 0) AS earnings
         FROM deliveries
         WHERE rider_id = ?
     ");
@@ -130,92 +131,12 @@ function get_rider_stats($conn, $rider_id) {
             $stats['active_deliveries']    = intval($row['active_deliveries'] ?? 0);
             $stats['completed_deliveries'] = intval($row['completed_deliveries'] ?? 0);
             // Example flat ৳50 / $3 commission per completed delivery
-            $stats['total_earnings']       = $stats['completed_deliveries'] * 3.50;
+            $stats['total_earnings']       = floatval($row['earnings'] ?? 0);
         }
         mysqli_stmt_close($stmt);
     }
 
     return $stats;
-}
-
-/**
- * Rider claims / accepts an available delivery
- */
-function claim_delivery($conn, $order_id, $rider_id) {
-    $order_id = intval($order_id);
-    $rider_id = intval($rider_id);
-
-    $existing = get_delivery_by_order_id($conn, $order_id);
-
-    if ($existing) {
-        $stmt = mysqli_prepare($conn, "
-            UPDATE deliveries 
-            SET rider_id = ?, delivery_status = 'Assigned', assigned_at = NOW() 
-            WHERE order_id = ?
-        ");
-        if (!$stmt) return false;
-        mysqli_stmt_bind_param($stmt, "ii", $rider_id, $order_id);
-    } else {
-        $stmt = mysqli_prepare($conn, "
-            INSERT INTO deliveries (order_id, rider_id, delivery_status, assigned_at) 
-            VALUES (?, ?, 'Assigned', NOW())
-        ");
-        if (!$stmt) return false;
-        mysqli_stmt_bind_param($stmt, "ii", $order_id, $rider_id);
-    }
-
-    $success = mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
-
-    // Also update order status to Out for Delivery if ready
-    if ($success) {
-        $update_ord = mysqli_prepare($conn, "UPDATE orders SET order_status = 'Out for Delivery' WHERE order_id = ?");
-        if ($update_ord) {
-            mysqli_stmt_bind_param($update_ord, "i", $order_id);
-            mysqli_stmt_execute($update_ord);
-            mysqli_stmt_close($update_ord);
-        }
-    }
-
-    return $success;
-}
-
-/**
- * Update delivery status (Picked Up, Delivered, etc.)
- */
-function update_delivery_status_by_id($conn, $delivery_id, $status) {
-    $delivery_id = intval($delivery_id);
-    $allowed = ['Pending Assignment', 'Assigned', 'Picked Up', 'Delivered', 'Cancelled'];
-    if (!in_array($status, $allowed, true)) return false;
-
-    if ($status === 'Delivered') {
-        $stmt = mysqli_prepare($conn, "UPDATE deliveries SET delivery_status = ?, delivered_at = NOW() WHERE delivery_id = ?");
-    } else {
-        $stmt = mysqli_prepare($conn, "UPDATE deliveries SET delivery_status = ? WHERE delivery_id = ?");
-    }
-
-    if (!$stmt) return false;
-
-    mysqli_stmt_bind_param($stmt, "si", $status, $delivery_id);
-    $success = mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
-
-    // If delivered, update the order status and payment status if COD
-    if ($success && $status === 'Delivered') {
-        $stmt2 = mysqli_prepare($conn, "
-            UPDATE orders o 
-            JOIN deliveries d ON o.order_id = d.order_id 
-            SET o.order_status = 'Delivered', o.payment_status = 'Paid' 
-            WHERE d.delivery_id = ?
-        ");
-        if ($stmt2) {
-            mysqli_stmt_bind_param($stmt2, "i", $delivery_id);
-            mysqli_stmt_execute($stmt2);
-            mysqli_stmt_close($stmt2);
-        }
-    }
-
-    return $success;
 }
 
 /**

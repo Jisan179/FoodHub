@@ -70,19 +70,8 @@ if ($user_role === 'Customer') {
 elseif ($user_role === 'Restaurant Manager') {
     $my_restaurant = get_restaurant_by_manager_id($conn, $user_id);
 
-    // Handle order status update
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_order_status') {
-        $order_id = intval($_POST['order_id'] ?? 0);
-        $new_status = trim($_POST['new_status'] ?? '');
-
-        if ($order_id > 0 && !empty($new_status)) {
-            if (update_order_status($conn, $order_id, $new_status)) {
-                $success = "Order #{$order_id} status updated to '{$new_status}' successfully!";
-            } else {
-                $error = "Failed to update order status.";
-            }
-        }
-    }
+    // Order status changes are handled only by manager/controllers/order_controller.php,
+    // which verifies restaurant ownership.
 
     if ($my_restaurant) {
         $restaurant_id = intval($my_restaurant['restaurant_id']);
@@ -100,28 +89,26 @@ elseif ($user_role === 'Restaurant Manager') {
 // ROLE 3: RIDER DASHBOARD LOGIC
 // ----------------------------------------------------
 elseif ($user_role === 'Rider') {
-    // Handle claim delivery action
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'claim_delivery') {
-        $order_id = intval($_POST['order_id'] ?? 0);
-        if ($order_id > 0) {
-            if (claim_delivery($conn, $order_id, $user_id)) {
-                $success = "Delivery for Order #{$order_id} assigned to you! Safe riding!";
-            } else {
-                $error = "Unable to accept delivery. It may already be assigned.";
-            }
-        }
-    }
+    require_once __DIR__ . '/../models/rider_model.php';
 
-    // Handle delivery status update action
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_delivery_status') {
-        $delivery_id = intval($_POST['delivery_id'] ?? 0);
-        $status = trim($_POST['status'] ?? '');
-        if ($delivery_id > 0 && !empty($status)) {
-            if (update_delivery_status_by_id($conn, $delivery_id, $status)) {
-                $success = "Delivery status successfully updated to '{$status}'!";
-            } else {
-                $error = "Failed to update delivery status.";
-            }
+    // Both actions go through rider_update_delivery(), which locks the row,
+    // checks ownership and only allows valid status transitions
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && in_array($_POST['action'], ['claim_delivery', 'update_delivery_status'], true)) {
+        if ($_POST['action'] === 'claim_delivery') {
+            $delivery = get_delivery_by_order_id($conn, intval($_POST['order_id'] ?? 0));
+            $delivery_id = intval($delivery['delivery_id'] ?? 0);
+            $rider_action = 'accept';
+        } else {
+            $delivery_id = intval($_POST['delivery_id'] ?? 0);
+            $status_actions = ['Picked Up' => 'pickup', 'Delivered' => 'deliver'];
+            $rider_action = $status_actions[$_POST['status'] ?? ''] ?? '';
+        }
+
+        $result = rider_update_delivery($conn, $delivery_id, $user_id, $rider_action);
+        if ($result['ok']) {
+            $success = $result['message'];
+        } else {
+            $error = $result['message'];
         }
     }
 
