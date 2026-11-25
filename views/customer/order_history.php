@@ -85,6 +85,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                                         </a>
                                     <?php elseif ($st === 'Pending' || $st === 'Preparing'): ?>
                                         <form action="actions/cancel_order.php" method="POST" onsubmit="return confirm('Are you sure you want to cancel order #<?php echo $ord['order_id']; ?>?');" style="display: inline;">
+    <?php echo csrf_field(); ?>
                                             <input type="hidden" name="order_id" value="<?php echo $ord['order_id']; ?>">
                                             <input type="hidden" name="redirect_url" value="order_history.php">
                                             <button type="submit" class="btn btn-danger btn-sm">Cancel</button>

@@ -82,6 +82,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                             </td>
                             <td>
                                 <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" class="inline-form">
+    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="action" value="update_status">
                                     <input type="hidden" name="restaurant_id" value="<?php echo $r['restaurant_id']; ?>">
                                     

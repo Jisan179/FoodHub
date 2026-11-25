@@ -51,46 +51,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } else {
         $user = find_user_by_username_or_email($conn, $username);
 
-        if ($user) {
-            // Check account status
-            if ($user['status'] === 'Suspended') {
-                $error = "Your account has been suspended. Please contact support.";
-            } elseif ($user['status'] === 'Inactive') {
-                $error = "Your account is currently inactive. Please contact an administrator.";
-            } else {
-                // Verify password (supports bcrypt hash and plain text seed password fallback)
-                $password_matches = (password_verify($password, $user['password']) || $user['password'] === $password);
-
-                if ($password_matches) {
-                    // Populate session
-                    $_SESSION['user_id']  = intval($user['user_id']);
-                    $_SESSION['username'] = $user['username'];
-                    $_SESSION['name']     = $user['name'];
-                    $_SESSION['email']    = $user['email'];
-                    $_SESSION['role']     = normalize_role($user['role']);
-                    $_SESSION['phone']    = $user['phone'] ?? '';
-                    $_SESSION['address']  = $user['address'] ?? '';
-                    $_SESSION['status']   = $user['status'];
-
-                    // Optional Remember Me cookie
-                    if ($remember_me) {
-                        setcookie('foodhub_user', $user['username'], time() + (86400 * 30), "/");
-                    } else {
-                        if (isset($_COOKIE['foodhub_user'])) {
-                            setcookie('foodhub_user', '', time() - 3600, "/");
-                        }
-                    }
-
-                    // Role-Based Redirection
-                    $redirect_url = get_user_dashboard_url($_SESSION['role']);
-                    header("Location: " . $redirect_url);
-                    exit();
-                } else {
-                    $error = "Invalid password. Please check your credentials and try again.";
-                }
-            }
+        // Same message for unknown user and wrong password, so accounts cannot be probed
+        if (!$user || !password_verify($password, $user['password'])) {
+            $error = "Invalid username/email or password.";
+        } elseif ($user['status'] === 'Suspended') {
+            // Account status is only revealed after the password is proven
+            $error = "Your account has been suspended. Please contact support.";
+        } elseif ($user['status'] === 'Inactive') {
+            $error = "Your account is currently inactive. Please contact an administrator.";
         } else {
-            $error = "No active account found with that username or email address.";
+            // New session ID on login (prevents session fixation)
+            session_regenerate_id(true);
+
+            // Populate session
+            $_SESSION['user_id']  = intval($user['user_id']);
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['name']     = $user['name'];
+            $_SESSION['email']    = $user['email'];
+            $_SESSION['role']     = normalize_role($user['role']);
+            $_SESSION['phone']    = $user['phone'] ?? '';
+            $_SESSION['address']  = $user['address'] ?? '';
+            $_SESSION['status']   = $user['status'];
+
+            // Optional Remember Me cookie
+            if ($remember_me) {
+                setcookie('foodhub_user', $user['username'], time() + (86400 * 30), "/");
+            } elseif (isset($_COOKIE['foodhub_user'])) {
+                setcookie('foodhub_user', '', time() - 3600, "/");
+            }
+
+            // Role-Based Redirection
+            header("Location: " . get_user_dashboard_url($_SESSION['role']));
+            exit();
         }
     }
 }

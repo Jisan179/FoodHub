@@ -185,14 +185,13 @@ $edit_base_url = $in_admin_folder ? 'user-edit.php' : 'admin/user-edit.php';
                                     </a>
 
                                     <?php if ($u['user_id'] != ($_SESSION['user_id'] ?? 0)): ?>
-                                        <a 
-                                            href="<?php echo $current_page_url; ?>?delete_id=<?php echo $u['user_id']; ?>" 
-                                            class="btn btn-danger btn-sm"
-                                            onclick="return confirm('Are you sure you want to delete user #<?php echo $u['user_id']; ?> (<?php echo htmlspecialchars($u['username']); ?>)?');"
-                                            title="Delete user"
-                                        >
-                                            Delete
-                                        </a>
+                                        <form method="POST" action="<?php echo $current_page_url; ?>" style="display: inline; margin: 0;"
+                                              onsubmit="return confirm('Are you sure you want to delete user #<?php echo intval($u['user_id']); ?>?');">
+                    <?php echo csrf_field(); ?>
+                                            <input type="hidden" name="action" value="delete_user">
+                                            <input type="hidden" name="delete_id" value="<?php echo intval($u['user_id']); ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Delete user">Delete</button>
+                                        </form>
                                     <?php else: ?>
                                         <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; padding: 4px 6px; background: #f1f5f9; border-radius: 4px;">(You)</span>
                                     <?php endif; ?>

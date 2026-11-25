@@ -8,6 +8,7 @@ require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../includes/auth_check.php';
 
 check_auth(['Rider']);
+require_post();
 
 $user = get_logged_user();
 $rider_id = $user['user_id'];

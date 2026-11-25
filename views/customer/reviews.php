@@ -51,6 +51,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                     </div>
 
                     <form action="actions/submit_review.php" method="POST" style="margin-top: 12px;">
+    <?php echo csrf_field(); ?>
                         <input type="hidden" name="order_id" value="<?php echo $unrev['order_id']; ?>">
                         <input type="hidden" name="item_id" value="<?php echo $unrev['item_id']; ?>">
                         <input type="hidden" name="redirect_url" value="reviews.php">
@@ -131,6 +132,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                     ✏️ Edit
                 </button>
                 <form action="actions/delete_review.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this review?');" style="display: inline;">
+                            <?php echo csrf_field(); ?>
                     <input type="hidden" name="review_id" value="<?php echo $rev['review_id']; ?>">
                     <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
                 </form>
@@ -140,6 +142,7 @@ require_once __DIR__ . '/../partials/navbar.php';
             <div id="edit-review-<?php echo $rev['review_id']; ?>" style="display: none; margin-top: 14px; padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: #ffffff;">
                 <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 10px;">Edit Your Review</h4>
                 <form action="actions/edit_review.php" method="POST">
+                        <?php echo csrf_field(); ?>
                     <input type="hidden" name="review_id" value="<?php echo $rev['review_id']; ?>">
                     
                     <div class="form-group" style="margin-bottom: 10px;">

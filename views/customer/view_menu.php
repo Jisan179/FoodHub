@@ -36,6 +36,7 @@ require_once __DIR__ . '/../partials/navbar.php';
             </p>
             <div style="display: flex; gap: 12px;">
                 <form action="actions/add_to_cart.php" method="POST">
+    <?php echo csrf_field(); ?>
                     <input type="hidden" name="item_id" value="<?php echo $conflict['item_id']; ?>">
                     <input type="hidden" name="quantity" value="<?php echo $conflict['quantity']; ?>">
                     <input type="hidden" name="clear_if_conflict" value="1">
@@ -78,6 +79,7 @@ require_once __DIR__ . '/../partials/navbar.php';
             <div>
                 <?php if ($is_favorited): ?>
                     <form action="actions/remove_favorite.php" method="POST">
+                        <?php echo csrf_field(); ?>
                         <input type="hidden" name="restaurant_id" value="<?php echo $restaurant['restaurant_id']; ?>">
                         <input type="hidden" name="redirect_url" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
                         <button type="submit" class="btn btn-secondary" style="border-color: #fecaca; color: #ef4444;">
@@ -86,6 +88,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                     </form>
                 <?php else: ?>
                     <form action="actions/add_favorite.php" method="POST">
+                            <?php echo csrf_field(); ?>
                         <input type="hidden" name="restaurant_id" value="<?php echo $restaurant['restaurant_id']; ?>">
                         <input type="hidden" name="redirect_url" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
                         <button type="submit" class="btn btn-secondary">
@@ -96,6 +99,13 @@ require_once __DIR__ . '/../partials/navbar.php';
             </div>
         </div>
     </div>
+
+    <?php if (empty($restaurant['is_open'])): ?>
+        <div class="alert alert-error">
+            <span>⚠️</span>
+            <span>This restaurant is closed right now. You can browse the menu, but ordering is paused.</span>
+        </div>
+    <?php endif; ?>
 
     <!-- Category Filter Tabs -->
     <?php if (!empty($categories)): ?>
@@ -134,6 +144,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                 <div class="food-card-footer">
                     <div class="food-price">৳<?php echo number_format((float)$item['price'], 2); ?></div>
                     <form action="actions/add_to_cart.php" method="POST" style="display: flex; align-items: center; gap: 8px;">
+                            <?php echo csrf_field(); ?>
                         <input type="hidden" name="item_id" value="<?php echo $item['item_id']; ?>">
                         <input type="hidden" name="redirect_url" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
                         

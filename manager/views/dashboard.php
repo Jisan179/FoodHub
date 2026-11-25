@@ -1,14 +1,12 @@
 <?php
 // manager/views/dashboard.php
-session_start();
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../models/RestaurantModel.php';
 require_once __DIR__ . '/../models/OrderModel.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Restaurant Manager') {
-    header('Location: ../../login.php');
-    exit();
-}
+require_once __DIR__ . '/../../includes/auth_check.php';
+
+check_auth(['Restaurant Manager']);
 
 $user_id = $_SESSION['user_id'];
 $manager_name = $_SESSION['name'] ?? $_SESSION['username'] ?? 'Manager';
@@ -157,6 +155,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
                                             </a>
                                         <?php endif; ?>
                                         <form action="../controllers/restaurant_controller.php?action=delete" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this restaurant? This action cannot be undone.');">
+    <?php echo csrf_field(); ?>
                                             <input type="hidden" name="restaurant_id" value="<?php echo $res['restaurant_id']; ?>">
                                             <button type="submit" class="btn btn-sm btn-danger">
                                                 Delete

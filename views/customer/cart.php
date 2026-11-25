@@ -78,6 +78,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <!-- Decrement Form -->
                                     <form action="actions/update_cart_item.php" method="POST" style="display: inline;">
+    <?php echo csrf_field(); ?>
                                         <input type="hidden" name="item_id" value="<?php echo $item['item_id']; ?>">
                                         <input type="hidden" name="quantity" value="<?php echo intval($item['quantity']) - 1; ?>">
                                         <button type="submit" class="qty-btn" title="Decrease quantity">−</button>
@@ -87,6 +88,7 @@ require_once __DIR__ . '/../partials/navbar.php';
 
                                     <!-- Increment Form -->
                                     <form action="actions/update_cart_item.php" method="POST" style="display: inline;">
+                                            <?php echo csrf_field(); ?>
                                         <input type="hidden" name="item_id" value="<?php echo $item['item_id']; ?>">
                                         <input type="hidden" name="quantity" value="<?php echo intval($item['quantity']) + 1; ?>">
                                         <button type="submit" class="qty-btn" title="Increase quantity">+</button>
@@ -96,6 +98,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                             <td><strong>৳<?php echo number_format((float)$item['subtotal'], 2); ?></strong></td>
                             <td>
                                 <form action="actions/remove_from_cart.php" method="POST" onsubmit="return confirm('Remove this item from your cart?');">
+                                            <?php echo csrf_field(); ?>
                                     <input type="hidden" name="item_id" value="<?php echo $item['item_id']; ?>">
                                     <button type="submit" class="btn btn-danger btn-sm" style="padding: 4px 10px;">✕</button>
                                 </form>

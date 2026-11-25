@@ -24,6 +24,7 @@ require_once __DIR__ . '/../partials/navbar.php';
     </div>
 
     <form action="actions/place_order.php" method="POST">
+    <?php echo csrf_field(); ?>
         <div class="cart-layout">
             <!-- Left: Delivery Details Form -->
             <div>

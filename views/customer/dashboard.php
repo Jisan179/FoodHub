@@ -197,12 +197,14 @@ $display_name = $customer_name ?? $user_name ?? 'Foodie';
                         <!-- Favorite Toggle -->
                         <?php if (!empty($rest['is_favorite'])): ?>
                             <form action="<?php echo $cust_prefix; ?>actions/remove_favorite.php" method="POST">
+                <?php echo csrf_field(); ?>
                                 <input type="hidden" name="restaurant_id" value="<?php echo $rest['restaurant_id']; ?>">
                                 <input type="hidden" name="redirect_url" value="<?php echo $dash_redirect; ?>">
                                 <button type="submit" class="fav-action-btn" title="Remove from favorites">❤️</button>
                             </form>
                         <?php else: ?>
                             <form action="<?php echo $cust_prefix; ?>actions/add_favorite.php" method="POST">
+                                    <?php echo csrf_field(); ?>
                                 <input type="hidden" name="restaurant_id" value="<?php echo $rest['restaurant_id']; ?>">
                                 <input type="hidden" name="redirect_url" value="<?php echo $dash_redirect; ?>">
                                 <button type="submit" class="fav-action-btn" title="Add to favorites">🤍</button>

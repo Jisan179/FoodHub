@@ -23,6 +23,7 @@ require_once __DIR__ . '/../partials/header.php';
         <?php endif; ?>
 
         <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" id="registerForm">
+    <?php echo csrf_field(); ?>
             <div class="form-group" style="margin-bottom: 14px;">
                 <label class="form-label" for="name">Full Name *</label>
                 <input 

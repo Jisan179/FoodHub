@@ -31,7 +31,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
     if ($confirm_text !== 'DELETE' && $confirm_text !== 'DEACTIVATE') {
         $error = "Please type 'DELETE' or 'DEACTIVATE' to confirm account closure.";
     } else {
-        if ($confirm_text === 'DELETE') {
+        if ($confirm_text === 'DELETE' && user_has_order_history($conn, $user_id)) {
+            $error = "Your account has order history, so it cannot be deleted. Type DEACTIVATE to close it instead.";
+        } elseif ($confirm_text === 'DELETE') {
             // Check if current user is the sole administrator
             if (normalize_role($user['role']) === 'Administrator') {
                 $user_counts = count_users_by_role($conn);

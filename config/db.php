@@ -10,6 +10,9 @@ $db_pass = "";
 $db_name = "foodhub_db";
 $db_port = 3306;
 
+// PHP 8.1+ throws exceptions by default; this project uses procedural if/else error checks
+mysqli_report(MYSQLI_REPORT_OFF);
+
 // Establish database connection
 $conn = @mysqli_connect($db_host, $db_user, $db_pass, $db_name, $db_port);
 

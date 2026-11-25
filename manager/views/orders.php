@@ -1,14 +1,12 @@
 <?php
 // manager/views/orders.php
-session_start();
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../models/OrderModel.php';
 require_once __DIR__ . '/../models/RestaurantModel.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Restaurant Manager') {
-    header('Location: ../../login.php');
-    exit();
-}
+require_once __DIR__ . '/../../includes/auth_check.php';
+
+check_auth(['Restaurant Manager']);
 
 $user_id = $_SESSION['user_id'];
 $restaurants = getRestaurantsByManager($conn, $user_id);
@@ -56,7 +54,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
         </div>
     <?php endif; ?>
 
-    <div style="display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start;">
+    <div class="orders-layout">
         
         <!-- Pending Orders Column -->
         <div>
@@ -73,7 +71,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
                         ?>
                             <div style="background: #ffffff; border-left: 4px solid var(--primary); border-radius: 8px; border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 18px; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">Order #<?php echo $order['order_id']; ?></span>
+                                    <a href="order_detail.php?id=<?php echo intval($order['order_id']); ?>" title="View order details" style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);">Order #<?php echo $order['order_id']; ?> →</a>
                                     <span style="font-weight: 800; font-size: 1.2rem; color: var(--primary);">৳<?php echo number_format($order['total_amount'], 2); ?></span>
                                 </div>
                                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
@@ -91,6 +89,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
 
                                 <div style="display: flex; gap: 10px;">
                                     <form action="../controllers/order_controller.php?action=update_status" method="POST" style="flex: 2;">
+    <?php echo csrf_field(); ?>
                                         <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
                                         <input type="hidden" name="status" value="Preparing">
                                         <button type="submit" class="btn btn-primary" style="width: 100%;">
@@ -99,6 +98,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
                                     </form>
                                     
                                     <form action="../controllers/order_controller.php?action=update_status" method="POST" style="flex: 1;" onsubmit="return confirm('Are you sure you want to reject this order?');">
+                                            <?php echo csrf_field(); ?>
                                         <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
                                         <input type="hidden" name="status" value="Cancelled">
                                         <button type="submit" class="btn btn-danger" style="width: 100%;">
@@ -128,7 +128,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
                         ?>
                             <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px; margin-bottom: 12px;">
                                 <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">
-                                    <span>Order #<?php echo $k_order['order_id']; ?></span>
+                                    <a href="order_detail.php?id=<?php echo intval($k_order['order_id']); ?>" title="View order details" style="color: var(--text-main);">Order #<?php echo $k_order['order_id']; ?> →</a>
                                     <span class="badge <?php echo $is_ready ? 'badge-approved' : 'badge-pending'; ?>">
                                         <?php echo htmlspecialchars($k_order['order_status']); ?>
                                     </span>
@@ -138,6 +138,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
                                 </p>
                                 <?php if (!$is_ready): ?>
                                     <form action="../controllers/order_controller.php?action=update_status" method="POST">
+                                            <?php echo csrf_field(); ?>
                                         <input type="hidden" name="order_id" value="<?php echo $k_order['order_id']; ?>">
                                         <input type="hidden" name="status" value="Ready for Delivery">
                                         <button type="submit" class="btn btn-primary btn-sm" style="width: 100%;">

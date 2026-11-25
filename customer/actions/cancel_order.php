@@ -6,6 +6,7 @@
 require_once __DIR__ . '/../../controllers/auth/customer_auth_check.php';
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../models/customer_model.php';
+require_post();
 
 $customer_id  = intval($_SESSION['user_id']);
 $order_id     = intval($_POST['order_id'] ?? $_GET['order_id'] ?? 0);

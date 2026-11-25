@@ -43,6 +43,7 @@ elseif ($st === 'Delivered') $step_index = 5;
 
         <?php if ($can_cancel): ?>
             <form action="actions/cancel_order.php" method="POST" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+    <?php echo csrf_field(); ?>
                 <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
                 <input type="hidden" name="redirect_url" value="order_track.php?order_id=<?php echo $order['order_id']; ?>">
                 <button type="submit" class="btn btn-danger">Cancel Order</button>
@@ -140,6 +141,7 @@ elseif ($st === 'Delivered') $step_index = 5;
                                         <!-- Inline Review Form -->
                                         <div id="review-form-<?php echo $it['item_id']; ?>" style="display: none; margin-top: 8px; padding: 12px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
                                             <form action="actions/submit_review.php" method="POST">
+                    <?php echo csrf_field(); ?>
                                                 <input type="hidden" name="order_id" value="<?php echo $order['order_id']; ?>">
                                                 <input type="hidden" name="item_id" value="<?php echo $it['item_id']; ?>">
                                                 <input type="hidden" name="redirect_url" value="order_track.php?order_id=<?php echo $order['order_id']; ?>">
@@ -208,7 +210,7 @@ elseif ($st === 'Delivered') $step_index = 5;
 
                 <div style="border-top: 1px dashed var(--border-color); padding-top: 14px; margin-top: 14px;">
                     <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800;">
-                        <span>Total Paid</span>
+                        <span><?php echo ($order['payment_status'] === 'Paid') ? 'Total Paid' : 'Total Payable'; ?></span>
                         <span style="color: var(--primary);">৳<?php echo number_format((float)$order['total_amount'], 2); ?></span>
                     </div>
                 </div>

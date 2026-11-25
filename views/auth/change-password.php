@@ -39,6 +39,7 @@ require_once __DIR__ . '/../partials/navbar.php';
         </div>
         <div class="card-body">
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
+    <?php echo csrf_field(); ?>
                 <div class="form-group" style="margin-bottom: 18px;">
                     <label class="form-label" for="current_password">Current Password *</label>
                     <div style="position: relative;">

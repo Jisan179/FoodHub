@@ -35,6 +35,7 @@ $users_list_url = $in_admin_folder ? 'users.php' : 'admin/users.php';
         </div>
         <div class="card-body">
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
+    <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="create_user">
 
                 <div class="form-grid">

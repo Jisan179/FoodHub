@@ -44,6 +44,7 @@ if (!$edit_user) {
         </div>
         <div class="card-body">
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>?id=<?php echo $edit_user['user_id']; ?>" method="POST">
+    <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="edit_user">
                 <input type="hidden" name="user_id" value="<?php echo $edit_user['user_id']; ?>">
 

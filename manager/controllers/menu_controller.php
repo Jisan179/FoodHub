@@ -1,14 +1,13 @@
 <?php
 // manager/controllers/menu_controller.php
-session_start();
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../models/FoodModel.php';
 require_once __DIR__ . '/../models/RestaurantModel.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Restaurant Manager') {
-    header('Location: ../../login.php');
-    exit();
-}
+require_once __DIR__ . '/../../includes/auth_check.php';
+
+check_auth(['Restaurant Manager']);
+require_post();
 
 $user_id = $_SESSION['user_id'];
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
@@ -17,11 +16,11 @@ switch ($action) {
     case 'add':
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $restaurant_id = intval($_POST['restaurant_id'] ?? 0);
-            $name = htmlspecialchars($_POST['name'] ?? '');
-            $description = htmlspecialchars($_POST['description'] ?? '');
+            $name = trim($_POST['name'] ?? '');
+            $description = trim($_POST['description'] ?? '');
             $price = floatval($_POST['price'] ?? 0);
-            $category = htmlspecialchars($_POST['category'] ?? 'Main Course');
-            $status = htmlspecialchars($_POST['status'] ?? 'Available');
+            $category = trim($_POST['category'] ?? '') ?: 'Main Course';
+            $status = ($_POST['status'] ?? '') === 'Unavailable' ? 'Unavailable' : 'Available';
 
             if (!getRestaurantByIdAndManager($conn, $restaurant_id, $user_id)) {
                 $_SESSION['error'] = "Unauthorized access.";
@@ -48,11 +47,11 @@ switch ($action) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $item_id = intval($_POST['item_id'] ?? 0);
             $restaurant_id = intval($_POST['restaurant_id'] ?? 0);
-            $name = htmlspecialchars($_POST['name'] ?? '');
-            $description = htmlspecialchars($_POST['description'] ?? '');
+            $name = trim($_POST['name'] ?? '');
+            $description = trim($_POST['description'] ?? '');
             $price = floatval($_POST['price'] ?? 0);
-            $category = htmlspecialchars($_POST['category'] ?? 'Main Course');
-            $status = htmlspecialchars($_POST['status'] ?? 'Available');
+            $category = trim($_POST['category'] ?? '') ?: 'Main Course';
+            $status = ($_POST['status'] ?? '') === 'Unavailable' ? 'Unavailable' : 'Available';
 
             if (!getRestaurantByIdAndManager($conn, $restaurant_id, $user_id)) {
                 $_SESSION['error'] = "Unauthorized access.";

@@ -32,6 +32,7 @@ $remembered_user = $_COOKIE['foodhub_user'] ?? '';
         <?php endif; ?>
 
         <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" id="loginForm">
+    <?php echo csrf_field(); ?>
             <div class="form-group" style="margin-bottom: 16px;">
                 <label class="form-label" for="username">Username or Email</label>
                 <input 

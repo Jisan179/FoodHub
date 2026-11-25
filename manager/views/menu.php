@@ -1,14 +1,12 @@
 <?php
 // manager/views/menu.php
-session_start();
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../models/RestaurantModel.php';
 require_once __DIR__ . '/../models/FoodModel.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Restaurant Manager') {
-    header('Location: ../../login.php');
-    exit();
-}
+require_once __DIR__ . '/../../includes/auth_check.php';
+
+check_auth(['Restaurant Manager']);
 
 $user_id = $_SESSION['user_id'];
 
@@ -96,6 +94,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
                                             Edit
                                         </button>
                                         <form action="../controllers/menu_controller.php?action=delete" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+    <?php echo csrf_field(); ?>
                                             <input type="hidden" name="restaurant_id" value="<?php echo $restaurant_id; ?>">
                                             <input type="hidden" name="item_id" value="<?php echo $item['item_id']; ?>">
                                             <button type="submit" class="btn btn-sm btn-danger">
@@ -119,6 +118,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
         <span onclick="document.getElementById('add-modal').style.display='none'" style="position:absolute; top:16px; right:16px; font-size:1.5rem; cursor:pointer;">&times;</span>
         <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;">Add Menu Item</h2>
         <form action="../controllers/menu_controller.php?action=add" method="POST" class="form-grid" style="grid-template-columns: 1fr;">
+                                                <?php echo csrf_field(); ?>
             <input type="hidden" name="restaurant_id" value="<?php echo $restaurant_id; ?>">
             
             <div class="form-group">
@@ -155,6 +155,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
         <span onclick="document.getElementById('edit-modal').style.display='none'" style="position:absolute; top:16px; right:16px; font-size:1.5rem; cursor:pointer;">&times;</span>
         <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;">Edit Menu Item</h2>
         <form action="../controllers/menu_controller.php?action=edit" method="POST" class="form-grid" style="grid-template-columns: 1fr;">
+                <?php echo csrf_field(); ?>
             <input type="hidden" name="restaurant_id" value="<?php echo $restaurant_id; ?>">
             <input type="hidden" name="item_id" id="edit_item_id">
             

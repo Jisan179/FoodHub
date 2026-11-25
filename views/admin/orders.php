@@ -104,6 +104,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                             </td>
                             <td>
                                 <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" class="inline-form" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="action" value="update_order">
                                     <input type="hidden" name="order_id" value="<?php echo $o['order_id']; ?>">
                                     

@@ -90,12 +90,8 @@ function create_user($conn, $data) {
     $phone    = trim($data['phone'] ?? '');
     $status   = trim($data['status'] ?? 'Active');
 
-    // Hash password if not already hashed
-    if (strpos($raw_pass, '$2y$') === 0 || strpos($raw_pass, '$argon2') === 0) {
-        $hashed_pass = $raw_pass;
-    } else {
-        $hashed_pass = password_hash($raw_pass, PASSWORD_DEFAULT);
-    }
+    // Always hash: a caller-supplied value is never trusted as an existing hash
+    $hashed_pass = password_hash($raw_pass, PASSWORD_DEFAULT);
 
     $stmt = mysqli_prepare($conn, "
         INSERT INTO users (name, username, email, password, role, address, phone, status) 
@@ -179,8 +175,22 @@ function update_user_status($conn, $id, $status) {
 /**
  * Delete a user by ID
  */
+/**
+ * True when deleting this account would cascade-delete order records
+ */
+function user_has_order_history($conn, $user_id) {
+    $id = intval($user_id);
+    $sql = "SELECT 1 FROM orders o
+            JOIN restaurants r ON r.restaurant_id = o.restaurant_id
+            WHERE o.customer_id = $id OR r.user_id = $id
+            LIMIT 1";
+    $result = mysqli_query($conn, $sql);
+    return !$result || mysqli_num_rows($result) > 0;
+}
+
 function delete_user($conn, $user_id) {
     $id = intval($user_id);
+    if (user_has_order_history($conn, $id)) return false;
     $stmt = mysqli_prepare($conn, "DELETE FROM users WHERE user_id = ?");
     if (!$stmt) return false;
 

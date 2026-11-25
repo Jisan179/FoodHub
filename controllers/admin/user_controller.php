@@ -97,6 +97,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
         $error = "Name and Email are required fields.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "Please enter a valid email address.";
+    } elseif (!in_array(normalize_role($role), ['Administrator', 'Customer', 'Restaurant Manager', 'Rider'], true) || !in_array($status, ['Active', 'Inactive', 'Suspended'], true)) {
+        $error = "Invalid role or status selected.";
+    } elseif ($edit_id === intval($_SESSION['user_id']) && (normalize_role($role) !== 'Administrator' || $status !== 'Active')) {
+        $error = "You cannot remove your own Administrator role or deactivate your own account.";
     } elseif (check_user_exists($conn, $target_user['username'], $email, $edit_id)) {
         $error = "Email address is already in use by another user.";
     } else {
@@ -132,10 +136,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['
 }
 
 // ----------------------------------------------------
-// 3. DELETE USER (GET / POST)
+// 3. DELETE USER (POST only)
 // ----------------------------------------------------
-if (isset($_GET['delete_id'])) {
-    $delete_id = intval($_GET['delete_id']);
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
+    $delete_id = intval($_POST['delete_id'] ?? 0);
     $current_admin_id = intval($_SESSION['user_id'] ?? 0);
 
     if ($delete_id === $current_admin_id) {
@@ -146,7 +150,9 @@ if (isset($_GET['delete_id'])) {
             if (delete_user($conn, $delete_id)) {
                 $_SESSION['flash_success'] = "User #{$delete_id} (@{$target['username']}) deleted successfully.";
             } else {
-                $_SESSION['flash_error'] = "Failed to delete user.";
+                $_SESSION['flash_error'] = user_has_order_history($conn, $delete_id)
+                    ? "This account has order history and cannot be deleted. Set its status to Inactive instead."
+                    : "Failed to delete user.";
             }
         } else {
             $_SESSION['flash_error'] = "User not found.";

@@ -37,8 +37,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } elseif ($new_password !== $confirm_password) {
         $error = "New passwords do not match. Please re-enter.";
     } else {
-        // Verify current password (supports bcrypt hash and plain text fallback)
-        $matches = (password_verify($current_password, $user['password']) || $user['password'] === $current_password);
+        // Verify current password against the stored hash only
+        $matches = password_verify($current_password, $user['password']);
 
         if (!$matches) {
             $error = "Current password is incorrect. Please check and try again.";

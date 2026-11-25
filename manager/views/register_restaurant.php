@@ -1,11 +1,9 @@
 <?php
 // manager/views/register_restaurant.php
-session_start();
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Restaurant Manager') {
-    header('Location: ../../login.php');
-    exit();
-}
+require_once __DIR__ . '/../../includes/auth_check.php';
+
+check_auth(['Restaurant Manager']);
 
 $pageTitle = 'FoodHub - Register Restaurant';
 $currentPage = 'dashboard';
@@ -38,6 +36,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
         </div>
         <div class="card-body">
             <form action="../controllers/restaurant_controller.php?action=register" method="POST" class="form-grid" style="grid-template-columns: 1fr;">
+    <?php echo csrf_field(); ?>
                 <div class="form-group">
                     <label class="form-label">Restaurant Name <span style="color: var(--danger);">*</span></label>
                     <input type="text" name="name" class="form-control" placeholder="e.g. Kacchi Bhai" required>

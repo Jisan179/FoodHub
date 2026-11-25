@@ -36,6 +36,7 @@ require_once __DIR__ . '/../partials/navbar.php';
             </p>
             <div style="display: flex; gap: 12px;">
                 <form action="actions/add_to_cart.php" method="POST">
+    <?php echo csrf_field(); ?>
                     <input type="hidden" name="item_id" value="<?php echo $conflict['item_id']; ?>">
                     <input type="hidden" name="quantity" value="<?php echo $conflict['quantity']; ?>">
                     <input type="hidden" name="clear_if_conflict" value="1">
@@ -91,6 +92,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                 <div class="food-card-footer">
                     <div class="food-price">৳<?php echo number_format((float)$f_item['price'], 2); ?></div>
                     <form action="actions/add_to_cart.php" method="POST" style="display: inline;">
+                <?php echo csrf_field(); ?>
                         <input type="hidden" name="item_id" value="<?php echo $f_item['item_id']; ?>">
                         <input type="hidden" name="quantity" value="1">
                         <input type="hidden" name="redirect_url" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
@@ -118,12 +120,14 @@ require_once __DIR__ . '/../partials/navbar.php';
                         <!-- Favorite Button -->
                         <?php if ($rest['is_favorite'] > 0): ?>
                             <form action="actions/remove_favorite.php" method="POST">
+                            <?php echo csrf_field(); ?>
                                 <input type="hidden" name="restaurant_id" value="<?php echo $rest['restaurant_id']; ?>">
                                 <input type="hidden" name="redirect_url" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
                                 <button type="submit" class="fav-action-btn" title="Remove from favorites">❤️</button>
                             </form>
                         <?php else: ?>
                             <form action="actions/add_favorite.php" method="POST">
+                                    <?php echo csrf_field(); ?>
                                 <input type="hidden" name="restaurant_id" value="<?php echo $rest['restaurant_id']; ?>">
                                 <input type="hidden" name="redirect_url" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
                                 <button type="submit" class="fav-action-btn" title="Add to favorites">🤍</button>

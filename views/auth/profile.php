@@ -42,6 +42,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                 </div>
                 <div class="card-body">
                     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
+    <?php echo csrf_field(); ?>
                         <input type="hidden" name="action" value="update_profile">
 
                         <div class="form-grid">
@@ -159,6 +160,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                     </p>
                     
                     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" onsubmit="return confirm('Are you completely sure you want to proceed? This action may be irreversible.');">
+                            <?php echo csrf_field(); ?>
                         <input type="hidden" name="action" value="deactivate_account">
                         <div class="form-group" style="margin-bottom: 12px;">
                             <label class="form-label" for="confirm_deactivate" style="font-size: 0.8rem; color: #991b1b;">

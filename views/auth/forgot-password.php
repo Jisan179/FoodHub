@@ -13,7 +13,7 @@ require_once __DIR__ . '/../partials/header.php';
             </a>
             <h2 style="width: 100%; text-align: center; font-size: 1.45rem; font-weight: 700; margin-bottom: 4px;">Account Recovery</h2>
             <p class="login-subtitle" style="width: 100%; text-align: center; margin: 0 auto;">
-                <?php echo ($step === 1) ? 'Find your account using your username or email' : 'Set a new password for your account'; ?>
+                <?php echo ($step === 1) ? 'Verify your account to continue' : 'Set a new password for your account'; ?>
             </p>
         </div>
 
@@ -27,6 +27,7 @@ require_once __DIR__ . '/../partials/header.php';
         <?php if ($step === 1): ?>
             <!-- Step 1: Find Account -->
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
+    <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="find_account">
 
                 <div class="form-group" style="margin-bottom: 20px;">
@@ -43,15 +44,20 @@ require_once __DIR__ . '/../partials/header.php';
                     >
                 </div>
 
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label" for="phone">Registered Phone Number</label>
+                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="Same number as on your account" required>
+                </div>
+
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 600;">
-                    Find Account
+                    Verify Account
                 </button>
             </form>
         <?php else: ?>
             <!-- Step 2: Set New Password -->
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
                 <input type="hidden" name="action" value="reset_password">
-                <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($found_user_id ?? ''); ?>">
 
                 <div class="alert alert-success" style="font-size: 0.88rem; padding: 10px;">
                     Account verified: <strong>@<?php echo htmlspecialchars($found_username ?? 'user'); ?></strong>

@@ -96,6 +96,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                             <td><span class="badge badge-manager"><?php echo htmlspecialchars($avail['order_status']); ?></span></td>
                             <td>
                                 <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
+    <?php echo csrf_field(); ?>
                                     <input type="hidden" name="action" value="claim_delivery">
                                     <input type="hidden" name="order_id" value="<?php echo $avail['order_id']; ?>">
                                     <button type="submit" class="btn btn-primary btn-sm">Accept Delivery</button>
@@ -165,6 +166,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                             <td>
                                 <?php if ($deliv['delivery_status'] !== 'Delivered'): ?>
                                     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" style="display: flex; gap: 6px;">
+                                        <?php echo csrf_field(); ?>
                                         <input type="hidden" name="action" value="update_delivery_status">
                                         <input type="hidden" name="delivery_id" value="<?php echo $deliv['delivery_id']; ?>">
                                         

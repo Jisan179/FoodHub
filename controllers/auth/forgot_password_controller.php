@@ -20,7 +20,6 @@ if (is_logged_in()) {
 $error = "";
 $success = "";
 $step = 1; // 1 = enter username/email, 2 = reset password
-$found_user_id = null;
 $username_or_email = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -28,56 +27,65 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($action === 'find_account') {
         $username_or_email = trim($_POST['username_or_email'] ?? '');
+        $phone             = preg_replace('/\D+/', '', $_POST['phone'] ?? '');
+        $attempts          = intval($_SESSION['pw_reset_attempts'] ?? 0);
+        unset($_SESSION['pw_reset']);
 
-        if (empty($username_or_email)) {
-            $error = "Please enter your registered username or email address.";
+        if ($attempts >= 5) {
+            $error = "Too many attempts. Please contact an administrator to reset your password.";
+        } elseif (empty($username_or_email) || empty($phone)) {
+            $error = "Please enter your username or email and your registered phone number.";
         } else {
             $user = find_user_by_username_or_email($conn, $username_or_email);
+            $stored_phone = preg_replace('/\D+/', '', $user['phone'] ?? '');
 
-            if ($user) {
-                if ($user['status'] === 'Suspended') {
-                    $error = "This account has been suspended. Please contact support.";
-                } else {
-                    $step = 2;
-                    $found_user_id = $user['user_id'];
-                    $found_username = $user['username'];
-                }
+            // Administrators and suspended accounts can never use self-service reset
+            if ($user && $user['status'] !== 'Suspended' && normalize_role($user['role']) !== 'Administrator'
+                && $stored_phone !== '' && hash_equals($stored_phone, $phone)) {
+                $_SESSION['pw_reset'] = [
+                    'user_id'  => intval($user['user_id']),
+                    'username' => $user['username'],
+                    'expires'  => time() + 600
+                ];
+                $step = 2;
+                $found_username = $user['username'];
             } else {
-                $error = "No account found with that username or email address.";
+                $_SESSION['pw_reset_attempts'] = $attempts + 1;
+                $error = "Those details could not be verified. Please check them or contact an administrator.";
             }
         }
     } elseif ($action === 'reset_password') {
-        $user_id          = intval($_POST['user_id'] ?? 0);
+        // The target account comes ONLY from the verified session, never from the form
+        $reset            = $_SESSION['pw_reset'] ?? null;
+        $user_id          = ($reset && $reset['expires'] >= time()) ? intval($reset['user_id']) : 0;
+        $found_username   = $reset['username'] ?? '';
         $new_password     = trim($_POST['new_password'] ?? '');
         $confirm_password = trim($_POST['confirm_password'] ?? '');
 
         if ($user_id <= 0) {
-            $error = "Invalid session. Please search for your account again.";
+            $error = "Your verification expired. Please verify your account again.";
             $step = 1;
         } elseif (empty($new_password) || empty($confirm_password)) {
             $error = "Please enter and confirm your new password.";
             $step = 2;
-            $found_user_id = $user_id;
         } elseif (strlen($new_password) < 6) {
             $error = "New password must be at least 6 characters long.";
             $step = 2;
-            $found_user_id = $user_id;
         } elseif ($new_password !== $confirm_password) {
             $error = "Passwords do not match. Please re-enter.";
             $step = 2;
-            $found_user_id = $user_id;
         } else {
             $hashed = password_hash($new_password, PASSWORD_DEFAULT);
             $updated = update_user_password($conn, $user_id, $hashed);
 
             if ($updated) {
+                unset($_SESSION['pw_reset'], $_SESSION['pw_reset_attempts']);
                 $_SESSION['flash_success'] = "Your password has been successfully reset! Please log in.";
                 header("Location: login.php");
                 exit();
             } else {
                 $error = "Failed to update password. Please try again.";
                 $step = 2;
-                $found_user_id = $user_id;
             }
         }
     }

@@ -1,13 +1,11 @@
 <?php
 // manager/views/restaurant_profile.php
-session_start();
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../models/RestaurantModel.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Restaurant Manager') {
-    header('Location: ../../login.php');
-    exit();
-}
+require_once __DIR__ . '/../../includes/auth_check.php';
+
+check_auth(['Restaurant Manager']);
 
 $user_id = $_SESSION['user_id'];
 $restaurant_id = intval($_GET['id'] ?? 0);
@@ -56,6 +54,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
             <h2 class="card-title">Restaurant Details</h2>
             <form action="../controllers/restaurant_controller.php?action=delete" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this restaurant? This action cannot be undone.');">
+    <?php echo csrf_field(); ?>
                 <input type="hidden" name="restaurant_id" value="<?php echo $restaurant['restaurant_id']; ?>">
                 <button type="submit" class="btn btn-sm btn-danger">
                     Delete Restaurant
@@ -65,6 +64,7 @@ require_once __DIR__ . '/../../views/partials/navbar.php';
         
         <div class="card-body">
             <form action="../controllers/restaurant_controller.php?action=update" method="POST" class="form-grid" style="grid-template-columns: 1fr;">
+                    <?php echo csrf_field(); ?>
                 <input type="hidden" name="restaurant_id" value="<?php echo $restaurant['restaurant_id']; ?>">
                 
                 <div class="form-group">

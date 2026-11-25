@@ -8,6 +8,45 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/../config/db.php';
+
+/**
+ * CSRF protection: every POST request must carry the session's secret token
+ */
+function csrf_token() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . csrf_token() . '">';
+}
+
+function verify_csrf_request() {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        return;
+    }
+    $sent = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (!is_string($sent) || !hash_equals(csrf_token(), $sent)) {
+        http_response_code(403);
+        exit('Your form session has expired. Please go back, refresh the page and try again.');
+    }
+}
+
+verify_csrf_request();
+
+/**
+ * Reject non-POST access to endpoints that change data
+ */
+function require_post() {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        header("Location: " . get_user_dashboard_url());
+        exit();
+    }
+}
+
 /**
  * Check if a user is currently logged in
  */
@@ -103,6 +142,22 @@ function check_auth($allowed_roles = []) {
         $login_url = get_relative_login_url();
         header("Location: " . $login_url);
         exit();
+    }
+
+    // Re-read role and status so suspended or deleted accounts lose access immediately
+    global $conn;
+    if ($conn) {
+        $uid = intval($_SESSION['user_id']);
+        $res = mysqli_query($conn, "SELECT role, status FROM users WHERE user_id = $uid LIMIT 1");
+        $fresh = $res ? mysqli_fetch_assoc($res) : null;
+        if (!$fresh || $fresh['status'] !== 'Active') {
+            $_SESSION = [];
+            session_regenerate_id(true);
+            $_SESSION['flash_error'] = "Your account is no longer active. Please contact an administrator.";
+            header("Location: " . get_relative_login_url());
+            exit();
+        }
+        $_SESSION['role'] = normalize_role($fresh['role']);
     }
 
     if (!empty($allowed_roles)) {

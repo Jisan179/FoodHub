@@ -38,6 +38,7 @@ require_once __DIR__ . '/../partials/navbar.php';
                         🍔
                         <!-- Remove Favorite Button -->
                         <form action="actions/remove_favorite.php" method="POST">
+    <?php echo csrf_field(); ?>
                             <input type="hidden" name="restaurant_id" value="<?php echo $fav['restaurant_id']; ?>">
                             <input type="hidden" name="redirect_url" value="favorites.php">
                             <button type="submit" class="fav-action-btn" title="Remove from favorites">❤️</button>
