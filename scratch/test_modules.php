@@ -1,7 +1,19 @@
 <?php
 /**
  * FoodHub - Automated Health & Integrity Test Script
+ *
+ * WARNING: re-imports schema.sql, which DROPS every table and restores seed data.
+ * Usage: php scratch/test_modules.php --reset-database
  */
+
+// Developer script: command line only. It must never run from a browser.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('Forbidden');
+}
+if (!in_array('--reset-database', $argv, true)) {
+    exit("This script DELETES all FoodHub data. Re-run with --reset-database to confirm.\n");
+}
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/auth_check.php';

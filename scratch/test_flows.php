@@ -1,7 +1,14 @@
 <?php
 /**
  * FoodHub - End-to-End Functional Flow & Dynamic Path Verification Test
+ * Command line only. Writes test orders into the configured database.
  */
+
+// Developer script: command line only. It must never run from a browser.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit('Forbidden');
+}
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/auth_check.php';
