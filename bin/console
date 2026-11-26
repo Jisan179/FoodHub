@@ -1,0 +1,58 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+if (PHP_SAPI !== 'cli') {
+    exit('This script runs from the command line only.');
+}
+
+$config = require dirname(__DIR__) . '/app/bootstrap.php';
+$migrator = new App\Core\Migrator($config['db']);
+$command = $argv[1] ?? 'help';
+$database = $config['db']['name'];
+
+try {
+    switch ($command) {
+        case 'migrate':
+            $ran = $migrator->migrate();
+            echo $ran ? "Applied to {$database}: " . implode(', ', $ran) . "\n" : "{$database} is already up to date.\n";
+            break;
+        case 'seed':
+            if ($migrator->seed()) {
+                $migrator->addDemoSales((float) $config['delivery_fee'], (int) $config['rider_commission_percent']);
+                echo "Demo data loaded into {$database}.\n";
+            } else {
+                echo "{$database} already has users; nothing was changed.\n";
+            }
+            break;
+        case 'demo-sales':
+            $added = $migrator->addDemoSales((float) $config['delivery_fee'], (int) $config['rider_commission_percent']);
+            echo $added ? "Added {$added} sample orders to {$database}.\n" : "Sample sales are already there; nothing was changed.\n";
+            break;
+        case 'fresh':
+            if (!in_array('--force', $argv, true)) {
+                echo "'fresh' DELETES the database '{$database}'. Re-run with --force to confirm.\n";
+                exit(1);
+            }
+            $migrator->drop();
+            $migrator->migrate();
+            $migrator->seed();
+            $migrator->addDemoSales((float) $config['delivery_fee'], (int) $config['rider_commission_percent']);
+            echo "{$database} was recreated with demo data.\n";
+            break;
+        case 'images':
+            echo $migrator->linkDemoImages() . " photo(s) from public/assets/img/ linked to the demo data.\n";
+            break;
+        default:
+            echo "Usage: php bin/console <command>\n\n"
+                . "  migrate          Create the database and apply new migrations\n"
+                . "  seed             Load demo data into an empty database\n"
+                . "  images           Link photos in public/assets/img/ to the demo data\n"
+                . "  demo-sales       Add made-up sales for the last 7 days to a demo database\n"
+                . "  fresh --force    Delete and recreate the database with demo data\n";
+    }
+} catch (Throwable $error) {
+    fwrite(STDERR, 'Error: ' . $error->getMessage() . "\n");
+    exit(1);
+}
