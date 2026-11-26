@@ -9,6 +9,7 @@ It started as a university group project for a **Web Technologies** course. Vers
 - [Version history](#version-history)
 - [Features](#features)
 - [Use case diagram](#use-case-diagram)
+- [How it works](#how-it-works)
 - [Order lifecycle](#order-lifecycle)
 - [Tech stack](#tech-stack)
 - [Architecture](#architecture)
@@ -83,7 +84,38 @@ Version 3.0.0 is not a drop-in upgrade. It uses a new database (`foodhub_v3` by 
 
 ## Use case diagram
 
+### Overview
+
 ![FoodHub use case diagram showing Guest, Registered User, Customer, Restaurant Manager, Rider and Administrator](docs/use-case-diagram.svg)
+
+### Complete use case diagram
+
+Every feature, grouped by who uses it. Click the diagram to open it full size.
+
+![Complete UML use case diagram of FoodHub: visiting and signing in, account actions, ordering food, running a restaurant, delivering and administration, with include and extend relationships, role inheritance, and the email service and Google Maps as supporting actors.](docs/use-case-diagram-detailed.svg)
+
+How to read it:
+
+| Symbol | Meaning |
+|:---|:---|
+| Stick figure | An actor: a kind of user, or an outside service |
+| Oval | A use case: something the actor can do, or a step the system performs |
+| Solid line | The actor takes part in the use case |
+| Dashed arrow `«include»` | The base use case **always** performs this step, for example *Place order* includes *Verify price and availability* |
+| Dashed arrow `«extend»` | An **optional or conditional** addition that points to its base, for example *Cancel order* extends *Track orders and history* |
+| Hollow arrow | Inheritance: Customer, Restaurant Manager, Rider and Administrator are each also a Registered User |
+
+## How it works
+
+The use case diagram shows **what** each person can do. These two workflows show **how** the work moves between them. Each column is one role, and the numbers give the usual order of the steps. Click a diagram to open it full size.
+
+### An order, from search to review
+
+![Order workflow: the customer places an order, the restaurant manager accepts it and marks it ready, the rider picks it up and delivers it, and the customer reviews it. The order status is shown after each step, with the cancel, reject, release and administrator paths.](docs/workflow-order.svg)
+
+### Accounts and restaurants
+
+![Onboarding workflow: customers sign up themselves, the administrator creates manager and rider accounts, a manager registers a restaurant, and the administrator approves it, rejects it with a reason or later suspends it.](docs/workflow-onboarding.svg)
 
 ## Order lifecycle
 

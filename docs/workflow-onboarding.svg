@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 905" width="1100" height="905" role="img" aria-labelledby="title desc" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<title id="title">FoodHub onboarding workflow</title>
+<desc id="desc">How customer, manager and rider accounts are created and how a restaurant is approved before customers can order from it.</desc>
+<defs><marker id="a-475569" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker><marker id="a-b45309" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker><marker id="a-6d28d9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6d28d9"/></marker><marker id="a-1d4ed8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1d4ed8"/></marker><marker id="a-be123c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#be123c"/></marker><marker id="a-0f766e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#0f766e"/></marker><marker id="a-15803d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#15803d"/></marker><marker id="a-b91c1c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b91c1c"/></marker></defs>
+<rect width="1100" height="905" fill="#ffffff"/>
+<text x="550" y="34" font-size="22" font-weight="700" fill="#0f172a" text-anchor="middle">How accounts and restaurants get started</text>
+<rect x="10" y="56" width="280" height="734" fill="#fbfcfe" stroke="#cbd5e1"/>
+<rect x="10" y="56" width="280" height="44" fill="#fff7ed" stroke="#cbd5e1"/>
+<rect x="10" y="56" width="280" height="5" fill="#b45309"/>
+<text x="150" y="86" font-size="16" font-weight="700" fill="#b45309" text-anchor="middle">Guest / Customer</text>
+<rect x="290" y="56" width="280" height="734" fill="#fbfcfe" stroke="#cbd5e1"/>
+<rect x="290" y="56" width="280" height="44" fill="#fff1f2" stroke="#cbd5e1"/>
+<rect x="290" y="56" width="280" height="5" fill="#be123c"/>
+<text x="430" y="86" font-size="16" font-weight="700" fill="#be123c" text-anchor="middle">Administrator</text>
+<rect x="570" y="56" width="280" height="734" fill="#fbfcfe" stroke="#cbd5e1"/>
+<rect x="570" y="56" width="280" height="44" fill="#f5f3ff" stroke="#cbd5e1"/>
+<rect x="570" y="56" width="280" height="5" fill="#6d28d9"/>
+<text x="710" y="86" font-size="16" font-weight="700" fill="#6d28d9" text-anchor="middle">Restaurant Manager</text>
+<rect x="850" y="56" width="240" height="734" fill="#fbfcfe" stroke="#cbd5e1"/>
+<rect x="850" y="56" width="240" height="44" fill="#eff6ff" stroke="#cbd5e1"/>
+<rect x="850" y="56" width="240" height="5" fill="#1d4ed8"/>
+<text x="970" y="86" font-size="16" font-weight="700" fill="#1d4ed8" text-anchor="middle">Rider</text>
+<rect x="32" y="130" width="236" height="84" rx="12" fill="#fff7ed" stroke="#b45309" stroke-width="1.8"/>
+<text x="150" y="160" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Sign up</text>
+<text x="150" y="180" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Public sign-up creates</text>
+<text x="150" y="196.9" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">customer accounts only</text>
+<circle cx="32" cy="130" r="13" fill="#b45309"/>
+<text x="32" y="134.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">A</text>
+<rect x="32" y="250" width="236" height="66" rx="12" fill="#fff7ed" stroke="#b45309" stroke-width="1.8"/>
+<text x="150" y="279.5" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Sign in and order</text>
+<text x="150" y="299.5" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">The account is active at once</text>
+<path d="M150 214V248" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#a-b45309)"/>
+<rect x="312" y="130" width="236" height="84" rx="12" fill="#fff1f2" stroke="#be123c" stroke-width="1.8"/>
+<text x="430" y="160" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Create staff accounts</text>
+<text x="430" y="180" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Manager or Rider, then hand</text>
+<text x="430" y="196.9" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">over the sign-in details</text>
+<circle cx="312" cy="130" r="13" fill="#be123c"/>
+<text x="312" y="134.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+<rect x="592" y="250" width="236" height="66" rx="12" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.8"/>
+<text x="710" y="279.5" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Sign in</text>
+<text x="710" y="299.5" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Change the password in Profile</text>
+<circle cx="592" cy="250" r="13" fill="#6d28d9"/>
+<text x="592" y="254.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<rect x="858" y="250" width="204" height="84" rx="12" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.8"/>
+<text x="960" y="280" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Sign in</text>
+<text x="960" y="300" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">See open delivery</text>
+<text x="960" y="316.9" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">requests</text>
+<circle cx="858" cy="250" r="13" fill="#1d4ed8"/>
+<text x="858" y="254.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+<path d="M548 172H710V248" fill="none" stroke="#be123c" stroke-width="2" marker-end="url(#a-be123c)"/>
+<path d="M710 172H960V248" fill="none" stroke="#be123c" stroke-width="2" marker-end="url(#a-be123c)"/>
+<rect x="592" y="358" width="236" height="84" rx="12" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.8"/>
+<text x="710" y="388" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Register a restaurant</text>
+<text x="710" y="408" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Details and cover image.</text>
+<text x="710" y="424.9" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Status: Pending</text>
+<circle cx="592" cy="358" r="13" fill="#6d28d9"/>
+<text x="592" y="362.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+<path d="M710 316V356" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#a-475569)"/>
+<rect x="312" y="366" width="236" height="68" rx="12" fill="#fff1f2" stroke="#be123c" stroke-width="1.8"/>
+<text x="430" y="396.5" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Review the restaurant</text>
+<text x="430" y="416.5" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Approve or reject</text>
+<circle cx="312" cy="366" r="13" fill="#be123c"/>
+<text x="312" y="370.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+<path d="M592 400H550" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#a-475569)"/>
+<rect x="312" y="500" width="236" height="84" rx="12" fill="#fff1f2" stroke="#be123c" stroke-width="1.8"/>
+<text x="430" y="530" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Reject</text>
+<text x="430" y="550" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">A reason is required.</text>
+<text x="430" y="566.9" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">The manager can read it</text>
+<path d="M430 434V498" fill="none" stroke="#b91c1c" stroke-width="2" marker-end="url(#a-b91c1c)"/>
+<text x="416" y="470" font-size="12.5" font-weight="600" fill="#b91c1c" text-anchor="end" stroke="#ffffff" stroke-width="4" paint-order="stroke">not approved</text>
+<rect x="592" y="500" width="236" height="84" rx="12" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.8"/>
+<text x="710" y="530" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Fix and save</text>
+<text x="710" y="550" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Saving sends it back</text>
+<text x="710" y="566.9" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">to Pending</text>
+<path d="M548 542H590" fill="none" stroke="#b91c1c" stroke-width="2" marker-end="url(#a-b91c1c)"/>
+<path d="M780 500V444" fill="none" stroke="#6d28d9" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#a-6d28d9)"/>
+<text x="788" y="476" font-size="12.5" font-weight="600" fill="#6d28d9" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">review again</text>
+<rect x="346" y="635" width="168" height="30" rx="15" fill="#15803d"/>
+<text x="430" y="655" font-size="13.5" font-weight="700" fill="#fff" text-anchor="middle">Approved</text>
+<path d="M312 400H300V610H430V633" fill="none" stroke="#15803d" stroke-width="2" marker-end="url(#a-15803d)"/>
+<text x="370" y="603" font-size="12.5" font-weight="600" fill="#15803d" text-anchor="middle" stroke="#ffffff" stroke-width="4" paint-order="stroke">approved</text>
+<rect x="592" y="616" width="236" height="68" rx="12" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.8"/>
+<text x="710" y="646.5" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Build the menu</text>
+<text x="710" y="666.5" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Add dishes, then keep it Open</text>
+<circle cx="592" cy="616" r="13" fill="#6d28d9"/>
+<text x="592" y="620.5" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">5</text>
+<path d="M514 650H590" fill="none" stroke="#15803d" stroke-width="2" marker-end="url(#a-15803d)"/>
+<rect x="32" y="616" width="236" height="68" rx="12" fill="#fff7ed" stroke="#b45309" stroke-width="1.8"/>
+<text x="150" y="646.5" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Restaurant is visible</text>
+<text x="150" y="666.5" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Customers can now order</text>
+<path d="M346 650H270" fill="none" stroke="#15803d" stroke-width="2" marker-end="url(#a-15803d)"/>
+<rect x="312" y="706" width="236" height="66" rx="12" fill="#fff1f2" stroke="#be123c" stroke-width="1.8"/>
+<text x="430" y="735.5" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Suspend if needed</text>
+<text x="430" y="755.5" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Hidden from customers</text>
+<path d="M430 665V704" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#a-475569)"/>
+<rect x="10" y="810" width="1080" height="80" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.8"/>
+<text x="550" y="838" font-size="15.5" font-weight="700" fill="#0f172a" text-anchor="middle">Account safety, for every role</text>
+<text x="550" y="858" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">An account set to Pending cannot sign in until an administrator approves it. Suspended and inactive accounts lose access on their next request.</text>
+<text x="550" y="874.9" font-size="13" font-weight="400" fill="#475569" text-anchor="middle">Forgot password: an emailed link that works once and expires in 30 minutes. Changing the password signs out other sessions.</text>
+</svg>
