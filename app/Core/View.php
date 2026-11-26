@@ -65,9 +65,15 @@ final class View
         return e($url);
     }
 
+    /**
+     * URL of a file in public/. The version changes whenever the file does, so browsers
+     * never keep showing an old stylesheet, script or picture after an update.
+     */
     public function asset(string $path): string
     {
-        return $this->url($path);
+        $file = BASE_PATH . '/public/' . ltrim($path, '/');
+
+        return $this->url($path, is_file($file) ? ['v' => filemtime($file)] : []);
     }
 
     public function csrf(): string

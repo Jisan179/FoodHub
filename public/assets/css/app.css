@@ -194,7 +194,8 @@ body.auth-page::before { content: ""; position: fixed; inset: 0; z-index: -1; ba
 .field label:not(.check) { display: flex; flex-direction: column; gap: .3rem; }
 fieldset.field, .star-field { border: 0; padding: 0; margin-inline: 0; }
 .field label, .label { font-weight: 700; font-size: .88rem; }
-input, select, textarea { font: inherit; color: inherit; border: 1px solid #cbd5e1; border-radius: 10px; padding: .6rem .75rem; background: #fff; max-width: 100%; }
+/* Fields are always white, so their text colour is set here and not inherited from a dark section around them */
+input, select, textarea { font: inherit; color: var(--ink); border: 1px solid #cbd5e1; border-radius: 10px; padding: .6rem .75rem; background: #fff; max-width: 100%; }
 textarea { resize: vertical; min-height: 80px; font-weight: 400; }
 .input-qty { width: 76px; }
 .form-grid { display: grid; gap: 0 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
