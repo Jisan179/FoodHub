@@ -14,13 +14,14 @@ final class AccountService extends Service
         return $this->app->make(UserRepository::class);
     }
 
-    /** Customers are active at once. Managers and riders wait for an administrator. */
-    public function register(array $data, string $password): array
+    /**
+     * Public sign-up always creates an active customer, whatever the request contains.
+     * Manager and rider accounts are created only by an administrator.
+     */
+    public function registerCustomer(array $data, string $password): array
     {
-        if (!in_array($data['role'], ['customer', 'manager', 'rider'], true)) {
-            throw new DomainError('That account type cannot be registered.');
-        }
-        $data['status'] = $data['role'] === 'customer' ? 'active' : 'pending';
+        $data['role'] = 'customer';
+        $data['status'] = 'active';
         $id = $this->users()->create($data, $password);
 
         return $this->users()->find($id);

@@ -76,7 +76,6 @@ final class AuthController extends Controller
             'email' => 'required|email|max:150',
             'phone' => 'required|phone',
             'address' => 'required|max:255',
-            'role' => 'required|in:customer,manager,rider',
             'password' => 'required|min:8|max:200',
             'password_confirmation' => 'required|same:password',
         ]);
@@ -89,11 +88,9 @@ final class AuthController extends Controller
         }
         $password = $input['password'];
         unset($input['password'], $input['password_confirmation']);
-        $user = $this->make(AccountService::class)->register($input, $password);
+        $this->make(AccountService::class)->registerCustomer($input, $password);
 
-        return $this->redirect('/login', $user['status'] === 'pending'
-            ? 'Account created. An administrator must approve it before you can sign in.'
-            : 'Account created. You can sign in now.');
+        return $this->redirect('/login', 'Account created. You can sign in now.');
     }
 
     public function showForgot(): Response

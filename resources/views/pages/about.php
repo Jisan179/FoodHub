@@ -7,7 +7,7 @@
         <li><strong>Customers</strong> browse restaurants, order, track deliveries and review dishes.</li>
         <li><strong>Restaurant managers</strong> manage menus, handle orders and see sales.</li>
         <li><strong>Riders</strong> accept deliveries and keep track of their earnings.</li>
-        <li><strong>Administrators</strong> approve accounts and restaurants and oversee orders.</li>
+        <li><strong>Administrators</strong> create manager and rider accounts, approve restaurants and oversee orders.</li>
     </ul>
     <p>This is a demonstration project. Its sample restaurants are fictional, no real food is delivered and no real payments are taken.</p>
 </article>

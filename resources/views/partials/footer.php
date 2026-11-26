@@ -15,8 +15,8 @@
             <h2>Join us</h2>
             <ul>
                 <li><a href="<?= $this->url(empty($currentUser) ? '/register' : '/help') ?>">Order as a customer</a></li>
-                <li><a href="<?= $this->url(empty($currentUser) ? '/register' : '/help') ?>">Add your restaurant</a></li>
-                <li><a href="<?= $this->url(empty($currentUser) ? '/register' : '/help') ?>">Ride with us</a></li>
+                <li><a href="<?= $this->url('/help') ?>">Add your restaurant</a></li>
+                <li><a href="<?= $this->url('/help') ?>">Ride with us</a></li>
             </ul>
         </nav>
         <nav aria-label="Legal and security">

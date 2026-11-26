@@ -38,8 +38,9 @@ Version 3.0.0 is not a drop-in upgrade. It uses a new database (`foodhub_v3` by 
 
 ### Accounts
 
-- Registration for Customers, Restaurant Managers and Riders
-- Administrator approval before new Manager and Rider accounts can sign in
+- Public registration creates Customer accounts only, enforced on the server
+- Restaurant Manager and Rider accounts are created by an administrator, who hands over the sign-in details
+- Accounts set to Pending cannot sign in until an administrator approves them
 - Sign-in with a username or email, with rate limiting
 - Password reset through an emailed link that works once and expires after 30 minutes
 - Profile editing and password change. Changing the email requires the current password.
@@ -76,7 +77,7 @@ Version 3.0.0 is not a drop-in upgrade. It uses a new database (`foodhub_v3` by 
 ### Administrator
 
 - Platform overview with accounts waiting for approval and recent orders
-- User management with search, filters and pagination
+- User management with search, filters and pagination, including creating Manager and Rider accounts
 - Restaurant approval, suspension, and rejection with a required reason
 - Order monitoring, allowed status changes and rider assignment
 

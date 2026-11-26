@@ -1,7 +1,7 @@
-<?php $title = 'Create account'; $selected = $this->rawOld('role', 'customer'); ?>
+<?php $title = 'Create account'; ?>
 <section class="card auth auth-wide">
     <h1>Create your account</h1>
-    <p class="muted">Restaurant Manager and Rider accounts need administrator approval.</p>
+    <p class="muted">Sign up as a customer to order food. <a href="<?= $this->url('/help') ?>">Restaurant manager and rider accounts</a> are created by the administrator.</p>
     <form method="POST" action="<?= $this->url('/register') ?>">
         <?= $this->csrf() ?>
         <div class="form-grid">
@@ -10,14 +10,6 @@
             <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" value="<?= $this->old('email') ?>" autocomplete="email" required><?= $this->error('email') ?></div>
             <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" value="<?= $this->old('phone') ?>" autocomplete="tel" required><?= $this->error('phone') ?></div>
             <div class="field full"><label for="address">Address</label><input id="address" name="address" value="<?= $this->old('address') ?>" autocomplete="street-address" maxlength="255" required><?= $this->error('address') ?></div>
-            <div class="field full">
-                <label for="role">I am a</label>
-                <select id="role" name="role">
-                    <?php foreach (['customer', 'manager', 'rider'] as $role): ?>
-                        <option value="<?= $role ?>"<?= $selected === $role ? ' selected' : '' ?>><?= e(status_label($role)) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
             <div class="field"><label for="password">Password (8 or more characters)</label><input id="password" name="password" type="password" minlength="8" autocomplete="new-password" required><?= $this->error('password') ?></div>
             <div class="field"><label for="password_confirmation">Confirm password</label><input id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password" required><?= $this->error('password_confirmation') ?></div>
         </div>

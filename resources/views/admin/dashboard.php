@@ -1,5 +1,5 @@
 <?php $title = 'Admin dashboard'; ?>
-<div class="page-head"><div><h1>Platform overview</h1></div></div>
+<div class="page-head"><div><h1>Platform overview</h1></div><a class="btn" href="<?= $this->url('/admin/users/create') ?>">Add manager or rider</a></div>
 <div class="grid grid-stats">
     <div class="card stat"><span>Users</span><strong><?= array_sum($userCounts) ?></strong><small class="muted"><?= $userCounts['customer'] ?> customers, <?= $userCounts['manager'] ?> managers, <?= $userCounts['rider'] ?> riders</small></div>
     <div class="card stat"><span>Restaurants to review</span><strong><?= $pendingRestaurants ?></strong><a class="small" href="<?= $this->url('/admin/restaurants', ['status' => 'pending']) ?>">Review</a></div>

@@ -40,26 +40,53 @@ test('login is rate limited even with a new session', function () {
     check(strpos($fresh->flash(), 'Too many sign-in attempts') !== false, 'sixth attempt is blocked: ' . $fresh->flash());
 });
 
-test('riders and managers wait for administrator approval', function () {
-    $data = ['name' => 'New Rider', 'username' => 'newrider', 'email' => 'new@foodhub.test', 'phone' => '+8801911111111',
-        'address' => 'Dhaka', 'role' => 'rider', 'password' => 'secret-pass-1', 'password_confirmation' => 'secret-pass-1'];
-    (new Client())->post('/register', $data);
-    same('pending', scalar("SELECT status FROM users WHERE username = 'newrider'"));
-    $rider = new Client();
-    $rider->post('/login', ['login' => 'newrider', 'password' => 'secret-pass-1']);
-    check(strpos($rider->flash(), 'waiting for administrator approval') !== false, 'pending cannot sign in');
+test('public sign-up only ever creates active customers', function () {
+    check(strpos((new Client())->get('/register')->body(), 'name="role"') === false, 'the form offers no role choice');
 
-    $id = (int) scalar("SELECT user_id FROM users WHERE username = 'newrider'");
-    Client::as('admin', 'admin123')->post("/admin/users/$id/approve");
-    Client::as('newrider', 'secret-pass-1');
+    $base = ['name' => 'Person', 'phone' => '+8801911111112', 'address' => 'Dhaka', 'password' => 'secret-pass-1', 'password_confirmation' => 'secret-pass-1'];
+    $staff = (int) scalar("SELECT COUNT(*) FROM users WHERE role <> 'customer'");
+    // A hand-made request cannot choose a role or a status
+    foreach (['none' => [], 'manager' => ['role' => 'manager'], 'rider' => ['role' => 'rider'], 'admin' => ['role' => 'admin', 'status' => 'active']] as $name => $extra) {
+        (new Client())->post('/register', $base + $extra + ['username' => "join_$name", 'email' => "join_$name@foodhub.test"]);
+        same('customer', scalar('SELECT role FROM users WHERE username = ?', ["join_$name"]), "role for $name");
+        same('active', scalar('SELECT status FROM users WHERE username = ?', ["join_$name"]), "status for $name");
+    }
+    same($staff, (int) scalar("SELECT COUNT(*) FROM users WHERE role <> 'customer'"), 'no staff account appeared');
+    same(403, Client::as('join_manager', 'secret-pass-1')->get('/manager')->status());
 });
 
-test('customers are active at once and nobody can register as admin', function () {
-    $base = ['name' => 'Person', 'phone' => '+8801911111112', 'address' => 'Dhaka', 'password' => 'secret-pass-1', 'password_confirmation' => 'secret-pass-1'];
-    (new Client())->post('/register', $base + ['username' => 'buyer', 'email' => 'buyer@foodhub.test', 'role' => 'customer']);
-    same('active', scalar("SELECT status FROM users WHERE username = 'buyer'"));
-    (new Client())->post('/register', $base + ['username' => 'boss', 'email' => 'boss@foodhub.test', 'role' => 'admin']);
-    same(null, scalar("SELECT 1 FROM users WHERE username = 'boss'"));
+test('only an administrator creates manager and rider accounts', function () {
+    $account = static fn (string $username, string $role, string $status = 'active') => [
+        'username' => $username, 'name' => 'Staff Person', 'email' => "$username@foodhub.test", 'phone' => '+8801911111113',
+        'address' => 'Dhaka', 'role' => $role, 'status' => $status, 'password' => 'secret-pass-1',
+    ];
+
+    (new Client())->post('/admin/users', $account('by_guest', 'manager'));
+    foreach (['customer1' => 'customer123', 'manager1' => 'manager123', 'rider1' => 'rider123'] as $username => $password) {
+        same(403, Client::as($username, $password)->post('/admin/users', $account("by_$username", 'manager'))->status(), $username);
+    }
+    same(0, (int) scalar("SELECT COUNT(*) FROM users WHERE username LIKE 'by\\_%'"), 'nobody else can create accounts');
+
+    $admin = Client::as('admin', 'admin123');
+    foreach (['manager' => '/manager', 'rider' => '/rider'] as $role => $home) {
+        $admin->post('/admin/users', $account("new_$role", $role));
+        same($role, scalar('SELECT role FROM users WHERE username = ?', ["new_$role"]));
+        // The person who receives the details can sign in at once
+        same(200, Client::as("new_$role", 'secret-pass-1')->get($home)->status(), $home);
+    }
+});
+
+test('a pending account waits for administrator approval', function () {
+    $admin = Client::as('admin', 'admin123');
+    $admin->post('/admin/users', ['username' => 'waiting_rider', 'name' => 'Waiting Rider', 'email' => 'waiting@foodhub.test',
+        'phone' => '+8801911111114', 'address' => 'Dhaka', 'role' => 'rider', 'status' => 'pending', 'password' => 'secret-pass-1']);
+    $rider = new Client();
+    $rider->post('/login', ['login' => 'waiting_rider', 'password' => 'secret-pass-1']);
+    check(strpos($rider->flash(), 'waiting for administrator approval') !== false, 'pending cannot sign in');
+
+    $id = (int) scalar("SELECT user_id FROM users WHERE username = 'waiting_rider'");
+    $admin->post("/admin/users/$id/approve");
+    Client::as('waiting_rider', 'secret-pass-1');
 });
 
 test('password reset uses a single-use emailed link and ends old sessions', function () {
