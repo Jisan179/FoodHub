@@ -49,7 +49,7 @@ Version 3.0.0 is not a drop-in upgrade. It uses a new database (`foodhub_v3` by 
 ### Customer
 
 - Dashboard with order statistics, active orders and pending reviews
-- Restaurant search with a cuisine filter, dish search and category filters
+- Restaurant search by name with a cuisine filter, dish search by name or category, and category filters on each menu
 - Favorite restaurants
 - A cart limited to one restaurant, with confirmation before it is replaced
 - Checkout with server-side prices inside a database transaction
