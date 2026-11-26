@@ -1,0 +1,6 @@
+# Uploaded files must never be executed
+Options -ExecCGI -Indexes
+
+<FilesMatch "\.(?i:php\d?|phtml|phar|pl|py|cgi)$">
+    Require all denied
+</FilesMatch>

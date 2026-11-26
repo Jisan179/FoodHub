@@ -1,176 +1,292 @@
-# 🍔 FoodHub - Online Food Ordering & Delivery System
+# 🍔 FoodHub: Online Food Ordering and Delivery System
 
-**FoodHub** is a full-featured multi-role online food ordering and delivery web application built for the **Web Technologies** course.
+FoodHub is a multi-role web application that covers the full life of a food order: a customer places it, a restaurant prepares it, a rider delivers it and an administrator oversees the platform.
 
-The application strictly adheres to the following architectural rules:
-- **4 Dedicated User Folders**: `admin/`, `customer/`, `manager/`, `rider/`.
-- **MVC Architecture per User Folder**: Each user folder contains its own `models/`, `views/`, and `controllers/` subdirectories.
-- **Pure Procedural PHP & MySQLi**: Zero OOP classes, **Zero PDO**, and **Zero `try...catch` exceptions** — all database transactions and errors are handled using pure procedural `if/else` checks with `mysqli_rollback()`.
-- **Manual Database & Table Queries**: Complete schema setup with raw MySQL queries in `database.sql` and `schema.sql`.
+It started as a university group project for a **Web Technologies** course. Version 3.0.0 rebuilds it in plain PHP with an object-oriented MVC structure, a single front controller, PDO and an automated test suite. It uses no framework and has no third-party PHP dependencies.
 
----
+## Contents
 
-## 🛠 Tech Stack
+- [Version history](#version-history)
+- [Features](#features)
+- [Use case diagram](#use-case-diagram)
+- [Order lifecycle](#order-lifecycle)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Database](#database)
+- [Security](#security)
+- [Getting started](#getting-started)
+- [Testing](#testing)
+- [Known limitations and roadmap](#known-limitations-and-roadmap)
+- [Team and credits](#team-and-credits)
 
-| Component | Technology |
+## Version history
+
+| Version | Summary |
 |:---|:---|
-| **Backend** | Pure Procedural PHP 8+ (`mysqli_*` procedural functions, prepared statements) |
-| **Architecture** | 4-User Procedural MVC (`models/`, `views/`, `controllers/` per user role) |
-| **Database** | MySQL / MariaDB (via XAMPP) |
-| **Frontend** | HTML5, Vanilla CSS (`style.css`, `customer.css`, `manager.css`) |
-| **Authentication** | Native PHP Sessions & Dynamic Depth-Aware Role Guards |
-| **Local Server** | Apache / XAMPP |
+| **3.0.0** | Rewrite: new architecture and interface, new database schema, new features, automated tests and CI |
+| [2.0.0](https://github.com/Jisan179/FoodHub/releases/tag/v2.0.0) | Security, correctness and layout fixes on top of 1.0.0 |
+| [1.0.0](https://github.com/Jisan179/FoodHub/releases/tag/v1.0.0) | Final version of the university group project, built by a team of four |
 
----
+Version 3.0.0 is not a drop-in upgrade. It uses a new database (`foodhub_v3` by default) and does not migrate data from earlier versions.
 
-## 👥 Role Modules & Key Features
+## Features
 
-### 1. 🛡️ Administrator Module (`admin/`)
-- **Dashboard Analytics**: Real-time KPI metrics for total users, approved restaurants, active orders, system revenue, and pending approvals.
-- **User Management**: Full CRUD operations for users (Customer, Restaurant Manager, Rider, Admin), password reset, and status toggles (`Active`, `Inactive`, `Suspended`).
-- **Restaurant Approvals**: Review pending restaurant applications, inspect details, approve or reject with custom reasons.
-- **Orders & Delivery Oversight**: Live order monitoring, manual rider assignments, and delivery status audits.
+### Public pages
 
-### 2. 🛍️ Customer Module (`customer/`)
-- **Customer Dashboard**: Overview cards (total orders, active orders, favorites, reviews), active orders banner, and top recommended spots.
-- **Restaurant & Menu Browsing**: Search across restaurants and food items, category filtering, ratings, and pricing.
-- **Favorites System**: 1-click bookmarking (❤️/🤍) directly from restaurant cards and menu pages.
-- **Persistent Shopping Cart**: Database-backed cart with single-restaurant conflict protection and live navbar item counter badge.
-- **Secure Atomic Checkout**: Server-side price recalculation inside database transactions (`mysqli_begin_transaction`) to prevent client-side price spoofing.
-- **Live Order Tracking**: Visual 5-stage progress tracker (`Order Placed` ➔ `Preparing` ➔ `Ready for Delivery` ➔ `Out for Delivery` ➔ `Delivered`) with rider contact details and order cancellation options.
-- **Food Ratings & Reviews**: Verified review submission for delivered dishes (1–5 stars with comments), along with edit and delete capabilities.
+- Sign-in, registration and password pages over a food photo background, with a show or hide button for passwords
+- A site footer with About, Help, Privacy, Terms and Security pages
 
-### 3. 👨‍🍳 Restaurant Manager Module (`manager/`)
-- **Restaurant Registration & Profile**: Register new dining spots for admin review and manage restaurant profile information, address, cuisine types, and opening status.
-- **Menu Management**: Add, update, and soft-delete food items, set category tags, and toggle item availability.
-- **Live Kitchen Order Workflow**: Accept incoming orders, transition statuses (`Pending` ➔ `Preparing` ➔ `Ready for Delivery`), and track automated timestamped logs in `order_status_log`.
-- **Order Details**: Comprehensive receipt breakdown with customer details, delivery address, and line items.
+### Accounts
 
-### 4. 🛵 Rider Delivery Module (`rider/`)
-- **Rider Portal Dashboard**: Live summary cards (available requests, active trips, completed deliveries, earnings).
-- **Available Delivery Task Claiming**: Claim pending delivery tasks with 1 click.
-- **Delivery Lifecycle Management**: Update order transitions (`Assigned` ➔ `Picked Up` ➔ `Delivered`) with custom delivery notes.
-- **Audit Logging & History**: Historical trip ledger recorded in `delivery_status_history`.
-- **Commission Earnings**: Automatic commission calculations per completed delivery.
+- Registration for Customers, Restaurant Managers and Riders
+- Administrator approval before new Manager and Rider accounts can sign in
+- Sign-in with a username or email, with rate limiting
+- Password reset through an emailed link that works once and expires after 30 minutes
+- Profile editing and password change. Changing the email requires the current password.
+- Account deactivation, or deletion when there is no order history
 
----
+### Customer
 
-## 📁 4-User MVC Directory Structure
+- Dashboard with order statistics, active orders and pending reviews
+- Restaurant search with a cuisine filter, dish search and category filters
+- Favorite restaurants
+- A cart limited to one restaurant, with confirmation before it is replaced
+- Checkout with server-side prices inside a database transaction
+- Cash on Delivery, or a **simulated** mobile wallet option (no payment gateway)
+- Order tracking, order history with status filters, and cancellation while allowed
+- One review per item of a delivered order, with clickable star ratings, a rating summary, edit and delete
 
+### Restaurant Manager
+
+- Live dashboard: seven-day order trend, today's trending dishes and the week's top dishes. New orders count at once, cancelled orders are left out, and the page refreshes itself.
+- Restaurant registration and editing, with a cover image
+- A button to open or close each restaurant for orders
+- Menu management with images, availability and soft delete
+- Order board to accept, reject and mark orders ready, plus paginated order history
+- Rejected restaurants show the administrator's reason and can be resubmitted
+
+### Rider
+
+- Open delivery requests. Customer contact details appear only after a trip is accepted.
+- Accept, confirm pickup and complete deliveries
+- Route panel for each active trip: an illustrated map (not a live map), pickup and drop-off timeline, and a link that opens directions in Google Maps
+- Release a trip with a reason, which returns it to the queue
+- Paginated delivery history and earnings
+
+### Administrator
+
+- Platform overview with accounts waiting for approval and recent orders
+- User management with search, filters and pagination
+- Restaurant approval, suspension, and rejection with a required reason
+- Order monitoring, allowed status changes and rider assignment
+
+## Use case diagram
+
+![FoodHub use case diagram showing Guest, Registered User, Customer, Restaurant Manager, Rider and Administrator](docs/use-case-diagram.svg)
+
+## Order lifecycle
+
+Every status change goes through one set of rules. No role can skip a step.
+
+```mermaid
+stateDiagram-v2
+    state "Ready for Delivery" as Ready
+    state "Out for Delivery" as OutForDelivery
+
+    [*] --> Pending: Customer places order
+    Pending --> Preparing: Manager or admin accepts
+    Pending --> Cancelled: Customer, manager or admin
+    Preparing --> Ready: Manager or admin
+    Preparing --> Cancelled: Customer or admin
+    Ready --> OutForDelivery: Rider confirms pickup
+    Ready --> Cancelled: Admin
+    OutForDelivery --> Delivered: Rider completes delivery
+    OutForDelivery --> Ready: Rider releases trip
+    OutForDelivery --> Cancelled: Admin
+    Delivered --> [*]
+    Cancelled --> [*]
 ```
+
+A rider can accept a delivery before the food is ready, but can confirm pickup only when the order is `Ready for Delivery`. Completing a delivery marks the order as paid and records the rider's earning, which is 10% of the order total including the delivery fee.
+
+## Tech stack
+
+| Layer | Technology |
+|:---|:---|
+| Language | PHP 8.0+ with strict types |
+| Database | MariaDB or MySQL through PDO prepared statements |
+| Frontend | Server-rendered HTML, one stylesheet, a small vanilla JavaScript file and the Plus Jakarta Sans font from Google Fonts |
+| Server | Apache with `mod_rewrite`, or PHP's built-in server for development |
+| Quality | Dependency-free test runner and GitHub Actions |
+
+## Architecture
+
+All requests enter through `public/index.php`. The application kernel matches a route, verifies the CSRF token, checks the user's role and then calls a controller. Controllers delegate business rules to services and data access to repositories.
+
+```mermaid
+flowchart LR
+    B[Browser] --> F[public/index.php]
+    F --> K[App kernel<br>routing, CSRF, access]
+    K --> C[Controllers]
+    C --> S[Services<br>business rules]
+    C --> R[Repositories<br>queries]
+    S --> R
+    R --> D[(MariaDB)]
+    S --> D
+    C --> V[Views]
+    V --> B
+```
+
+```text
 FoodHub/
-│
-├── config/
-│   └── db.php                     # Procedural MySQLi connection (Zero PDO)
-│
-├── includes/
-│   └── auth_check.php             # Dynamic path resolver & role-based middleware
-│
-├── views/partials/                # Shared layout templates
-│   ├── header.php                 # Dynamic HTML <head> & stylesheet loader
-│   ├── navbar.php                 # Role-tailored navigation bar
-│   └── footer.php                 # Shared footer
-│
-├── assets/
-│   ├── css/                       # style.css, customer.css, manager.css
-│   └── js/                        # rider.js
-│
-├── admin/                         # 🛡️ USER 1: Administrator Module
-│   ├── models/                    # UserModel.php, RestaurantModel.php, OrderModel.php
-│   ├── views/                     # dashboard.php, users.php, user-create.php, user-edit.php, restaurants.php, orders.php
-│   ├── controllers/               # DashboardController.php, UserController.php, RestaurantController.php, OrderController.php
-│   ├── dashboard.php              # Entrypoint router
-│   ├── users.php
-│   ├── restaurants.php
-│   └── orders.php
-│
-├── customer/                      # 🛍️ USER 2: Customer Module
-│   ├── models/                    # CustomerModel.php
-│   ├── views/                     # dashboard.php, browse_restaurants.php, view_menu.php, cart.php, checkout.php, favorites.php, order_history.php, order_track.php, reviews.php
-│   ├── controllers/               # DashboardController.php, BrowseController.php, CartController.php, CheckoutController.php, FavoritesController.php, MenuController.php, etc.
-│   ├── actions/                   # add_to_cart.php, place_order.php, submit_review.php, cancel_order.php, etc.
-│   ├── dashboard.php              # Entrypoint router
-│   ├── browse_restaurants.php
-│   ├── cart.php
-│   ├── checkout.php
-│   └── ...
-│
-├── manager/                       # 👨‍🍳 USER 3: Restaurant Manager Module
-│   ├── models/                    # RestaurantModel.php, FoodModel.php, OrderModel.php
-│   ├── views/                     # dashboard.php, menu.php, orders.php, order_detail.php, register_restaurant.php, restaurant_profile.php
-│   ├── controllers/               # restaurant_controller.php, menu_controller.php, order_controller.php
-│   ├── dashboard.php              # Entrypoint router
-│   ├── menu.php
-│   └── orders.php
-│
-├── rider/                         # 🛵 USER 4: Rider Module
-│   ├── models/                    # RiderModel.php, DeliveryModel.php
-│   ├── views/                     # dashboard.php, delivery_card.php, delivery_row.php
-│   ├── controllers/               # DashboardController.php, DeliveryAction.php
-│   └── dashboard.php              # Entrypoint router
-│
-├── database.sql                   # Complete manual database, table, and seed SQL queries
-├── schema.sql                     # Unified SQL schema & seed script
-└── index.php                      # Root entrypoint router
+├── app/
+│   ├── Core/            Kernel, router, database, session, validation, uploads
+│   ├── Controllers/     HTTP handlers, grouped by role
+│   ├── Models/          Repositories with the SQL queries
+│   ├── Services/        Orders, deliveries, cart, checkout, accounts, password reset
+│   └── routes.php       Every route and the role allowed to use it
+├── bin/console          Database commands
+├── config/config.php    Settings read from the environment
+├── database/            Migrations and demo data
+├── public/              The only web-accessible folder
+├── resources/views/     Page templates
+├── storage/logs/        Local mail log
+├── tests/               Unit and feature tests
+└── docs/                Diagrams
 ```
 
----
+## Database
 
-## 🗄 Database Schema
+| Table | Purpose |
+|:---|:---|
+| `users` | Accounts, roles and account status |
+| `restaurants` | Restaurant details, approval status, rejection reason and open flag |
+| `food_items` | Menu items, images, availability and soft delete |
+| `orders` | Totals, delivery details, payment and status |
+| `order_items` | Item names and prices as they were at purchase time |
+| `order_status_history` | Who changed what, and when |
+| `deliveries` | Rider assignment, delivery times and earnings |
+| `favorites` | Customers' favorite restaurants |
+| `cart_items` | Saved cart contents |
+| `reviews` | Ratings and comments |
+| `password_resets` | Hashed, expiring reset tokens |
+| `rate_limits` | Recent sign-in and reset attempts |
 
-The database `foodhub_db` comprises **12 relational tables**:
+A `migrations` table records which schema files have been applied. Foreign keys prevent deleting records that orders depend on.
 
-1. **`users`** – System user accounts with role assignments (`Administrator`, `Customer`, `Restaurant Manager`, `Rider`).
-2. **`restaurants`** – Dining partners, addresses, cuisine types, approval statuses, and opening flags.
-3. **`restaurant_managers`** – Authorization mapping linking managers to one or more restaurants.
-4. **`food_items`** – Menu items, pricing, categories, and availability flags (with soft-delete support).
-5. **`orders`** – Order headers, grand totals, delivery addresses, payment methods, and statuses.
-6. **`order_items`** – Line items with locked purchase prices.
-7. **`order_status_log`** – Audit history of kitchen and order status transitions.
-8. **`deliveries`** – Delivery tracking, assigned riders, pickup timestamps, and earnings.
-9. **`delivery_status_history`** – Timestamped audit ledger of all rider delivery updates and notes.
-10. **`favorites`** – Customer bookmarked restaurants.
-11. **`cart`** – Persistent shopping cart items per customer.
-12. **`reviews`** – Verified customer star ratings (1–5) and review comments on ordered dishes.
+## Security
 
----
+- Passwords are hashed with `password_hash()`
+- Every POST request requires a CSRF token
+- Session IDs are renewed at sign-in. Cookies are `HttpOnly` and `SameSite=Lax`, and `Secure` over HTTPS.
+- The user's status is checked on every request, and a password change ends that user's other sessions
+- Sign-in and password reset requests are rate limited in the database
+- Reset tokens are random, single-use and stored only as hashes
+- Roles are declared per route, and ownership is checked for orders, restaurants, menu items, reviews and deliveries
+- Queries use prepared statements, and output is HTML-escaped in the templates
+- A Content Security Policy allows only same-origin scripts, and same-origin styles plus Google Fonts
+- Uploads are limited to 2 MB, identified by file content, given random names and cannot run as PHP under Apache
+- Only `public/` is reachable through the provided Apache rules
 
-## ▶ How to Run Locally
+This project has automated tests for these behaviors but has not had an independent security audit.
 
-### 1. Prerequisites
-- Install **XAMPP** (Apache + MySQL/MariaDB) with PHP 8.0+.
+## Getting started
 
-### 2. Place Project in `htdocs`
-Clone or copy the project into your XAMPP `htdocs` folder:
-```
-C:\xampp\htdocs\FoodHub\
-```
+### Requirements
 
-### 3. Import Database
-1. Open **phpMyAdmin** at `http://localhost/phpmyadmin/`.
-2. Click **Import**, select [database.sql](file:///c:/xampp/htdocs/FoodHub/database.sql) (or [schema.sql](file:///c:/xampp/htdocs/FoodHub/schema.sql)), and click **Import / Go**.
-3. Verify connection settings in `config/db.php`:
-   ```php
-   $conn = mysqli_connect("localhost", "root", "", "foodhub_db");
+- PHP 8.0 or newer with `pdo_mysql`, `mbstring` and `fileinfo`
+- MariaDB 10.4+ or a compatible MySQL server
+- Apache with `mod_rewrite` and `AllowOverride All` (included in XAMPP), or PHP's built-in server
+
+Developed and tested locally with XAMPP: PHP 8.0.30 and MariaDB 10.4.32. PHP 8.0 no longer receives security updates, so use a supported PHP version for any public deployment.
+
+### Installation with XAMPP (Windows)
+
+1. Clone the project into `htdocs`:
+
+   ```bash
+   git clone https://github.com/Jisan179/FoodHub.git C:/xampp/htdocs/FoodHub
    ```
 
-### 4. Open in Browser
-Navigate to:
+2. Start **Apache** and **MySQL** in the XAMPP Control Panel.
+
+3. In the project folder, create your settings file and the database:
+
+   ```bash
+   cp .env.example .env
+   C:/xampp/php/php.exe bin/console migrate
+   C:/xampp/php/php.exe bin/console seed
+   ```
+
+4. Open `http://localhost/FoodHub/`.
+
+If you use a different folder name or address, update `APP_URL` in `.env`. Password reset links are built from it.
+
+### Using PHP's built-in server
+
+Set `APP_URL=http://127.0.0.1:8000` in `.env`, then run:
+
+```bash
+php -S 127.0.0.1:8000 -t public public/index.php
 ```
-http://localhost/FoodHub/
+
+### Password reset emails in development
+
+With `MAIL_DRIVER=log`, no email is sent. The message, including the reset link, is written to `storage/logs/mail.log`. `MAIL_DRIVER=mail` uses PHP's `mail()` function, which needs a configured mail server.
+
+### Demo photos
+
+The restaurant and dish photos and the sign-in background in `public/assets/img/` are AI-generated with ChatGPT. They illustrate sample data and do not show real restaurants or products. `seed` links them automatically. For an existing demo database, run `php bin/console images`.
+
+### Sample sales history
+
+So that the trend is not empty, `seed` and `fresh` also create made-up delivered orders for the last seven days, owned by a sample customer who cannot sign in. For an existing demo database, run `php bin/console demo-sales`. This data is fictional.
+
+### Demo accounts
+
+These accounts come from the demo data and are for local use only. Do not seed a public server.
+
+| Role | Username | Password |
+|:---|:---|:---|
+| Administrator | `admin` | `admin123` |
+| Customer | `customer1`, `customer2` | `customer123` |
+| Restaurant Manager | `manager1`, `manager2` | `manager123` |
+| Rider | `rider1`, `rider2` | `rider123` |
+
+To recreate the database with fresh demo data (**this deletes everything in it**):
+
+```bash
+php bin/console fresh --force
 ```
-You will be automatically redirected to `login.php`.
 
----
+## Testing
 
-## 🔑 Default Credentials
+```bash
+php tests/run.php
+```
 
-| Role | Username | Password | Dedicated Portal URL |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `admin` | `admin123` | `http://localhost/FoodHub/admin/dashboard.php` |
-| **Customer** | `customer1` | `customer123` | `http://localhost/FoodHub/customer/dashboard.php` |
-| **Customer** | `customer2` | `customer123` | `http://localhost/FoodHub/customer/dashboard.php` |
-| **Restaurant Manager** | `manager1` | `manager123` | `http://localhost/FoodHub/manager/views/dashboard.php` |
-| **Restaurant Manager** | `manager2` | `manager123` | `http://localhost/FoodHub/manager/views/dashboard.php` |
-| **Rider** | `rider1` | `rider123` | `http://localhost/FoodHub/rider/dashboard.php` |
-| **Rider** | `rider2` | `rider123` | `http://localhost/FoodHub/rider/dashboard.php` |
+The tests need a running MariaDB or MySQL server and a database user allowed to create databases. They create a separate `foodhub_test` database, delete it afterwards and refuse to run against any database whose name does not end in `_test`.
+
+They cover the order rules, validation, routing and image checks, along with feature tests for sign-in, rate limiting, CSRF, password reset, ownership checks, the order and delivery lifecycle, and page rendering for every role. The GitHub Actions workflow in `.github/workflows/ci.yml` runs them on PHP 8.0 and 8.3.
+
+## Known limitations and roadmap
+
+- [ ] A real payment gateway
+- [ ] SMTP email delivery, and email verification at registration
+- [ ] Live order updates and notifications (pages currently need a refresh)
+- [ ] A real interactive map with rider location (the current route panel is an illustration)
+- [ ] Delivery fees and rider commission that vary by distance
+- [ ] Browser-level tests, including the image upload flow
+- [ ] Container setup and a hosted demo
+- [ ] Screenshots of the new interface
+
+## Team and credits
+
+**Version 1.0.0** was a university group project by:
+
+- [Jisan](https://github.com/Jisan179)
+- [Siam Prodhan](https://github.com/siam74)
+- [Aryan Ahnaf](https://github.com/aryanahnafpatwary)
+- [S-M-Kabir](https://github.com/S-M-Kabir)
+
+**Versions 2.0.0 and 3.0.0** build on the product that team created and are released and maintained by [Jisan179](https://github.com/Jisan179).
