@@ -1,5 +1,5 @@
 <?php $title = 'Restaurants'; ?>
-<div class="page-head"><div><h1>Restaurants and food</h1><p>Search by restaurant, dish or category.</p></div></div>
+<div class="page-head"><div><h1>Restaurants and food</h1><p>Search restaurants by name, or dishes by name or category.</p></div></div>
 <form class="filters" method="GET" action="<?= $this->url('/customer/restaurants') ?>">
     <input type="search" name="search" value="<?= e($search) ?>" placeholder="Search" aria-label="Search">
     <select name="cuisine" aria-label="Cuisine">
@@ -27,7 +27,7 @@
 <?php endif; ?>
 <section class="section">
     <h2>Restaurants (<?= count($restaurants) ?>)</h2>
-    <?php if (!$restaurants): ?><p class="card empty">No restaurants match your search.</p><?php endif; ?>
+    <?php if (!$restaurants): ?><p class="card empty"><?= $foodResults ? 'No restaurant name matches. See the matching dishes above.' : 'No restaurants match your search.' ?></p><?php endif; ?>
     <div class="grid grid-cards">
         <?php foreach ($restaurants as $restaurant): ?>
             <?= $this->partial('partials/restaurant_card', ['restaurant' => $restaurant]) ?>

@@ -43,8 +43,9 @@ final class RestaurantRepository extends Repository
         $where = "r.status = 'approved'";
         $params = [$customerId];
         if ($search !== '') {
-            $where .= ' AND (r.name LIKE ? OR r.description LIKE ? OR r.address LIKE ?)';
-            array_push($params, ...array_fill(0, 3, $this->like($search)));
+            // By name only: a word in an address or description must not bring up other restaurants
+            $where .= ' AND r.name LIKE ?';
+            $params[] = $this->like($search);
         }
         if ($cuisine !== '') {
             $where .= ' AND r.cuisine_type = ?';

@@ -62,9 +62,9 @@ final class FoodRepository extends Repository
             "SELECT f.*, r.name AS restaurant_name, r.is_open FROM food_items f
              JOIN restaurants r ON r.restaurant_id = f.restaurant_id
              WHERE r.status = 'approved' AND f.is_available = 1 AND f.deleted_at IS NULL
-               AND (f.name LIKE ? OR f.description LIKE ? OR f.category LIKE ?)
+               AND (f.name LIKE ? OR f.category LIKE ?)
              ORDER BY f.name LIMIT 50",
-            [$like, $like, $like]
+            [$like, $like]
         );
     }
 

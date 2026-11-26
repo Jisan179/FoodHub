@@ -204,6 +204,25 @@ test('sample sales fill the week once and leave demo accounts clean', function (
     same(0, count(array_filter($report, static fn (array $day) => $day['orders'] === 0)), 'every day has orders');
 });
 
+test('search matches restaurant names, and dishes by name or category only', function () {
+    $customer = Client::as('customer1', 'customer123');
+    $find = static function (string $term) use ($customer): array {
+        $page = $customer->get('/customer/restaurants', ['search' => $term])->body();
+        preg_match_all('#<h3>(.*?)</h3>#s', $page, $restaurants);
+        preg_match_all('#<div class="dish">.*?<strong>(.*?)</strong>#s', $page, $dishes);
+
+        return [array_map('trim', $restaurants[1]), array_map('trim', $dishes[1])];
+    };
+
+    // "house" is also in the burger restaurant's address and in a burger's description
+    same([['Spice Grill House'], []], $find('house'));
+    same([['The Burger Spot'], []], $find('spot'));
+    same([['The Burger Spot'], ['Double Cheeseburger']], $find('burger'));
+    same([[], []], $find('Uttara'), 'addresses are not searched');
+    same([[], ['Chicken Dum Biryani', 'Mutton Kacchi Biryani']], $find('biryani'), 'dishes are still found by name');
+    same([[], ['Loaded Truffle Fries']], $find('sides'), 'and by category');
+});
+
 test('user list filters and paginates', function () {
     $admin = Client::as('admin', 'admin123');
     for ($i = 0; $i < 12; $i++) {
