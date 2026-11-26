@@ -18,7 +18,7 @@ final class View
         $this->session = $session;
     }
 
-    public function share(string $key, $value): void
+    public function share(string $key, mixed $value): void
     {
         $this->shared[$key] = $value;
     }

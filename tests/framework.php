@@ -46,7 +46,7 @@ function check(bool $condition, string $message): void
     }
 }
 
-function same($expected, $actual, string $message = ''): void
+function same(mixed $expected, mixed $actual, string $message = ''): void
 {
     check($expected === $actual, trim($message . ' expected ' . var_export($expected, true) . ', got ' . var_export($actual, true)));
 }

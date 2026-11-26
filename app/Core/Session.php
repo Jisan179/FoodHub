@@ -35,7 +35,7 @@ final class Session
         return $this->data[$key] ?? $default;
     }
 
-    public function put(string $key, $value): void
+    public function put(string $key, mixed $value): void
     {
         $this->data[$key] = $value;
     }
