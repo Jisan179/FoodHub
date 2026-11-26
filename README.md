@@ -4,8 +4,24 @@ FoodHub is a multi-role web application that covers the full life of a food orde
 
 It started as a university group project for a **Web Technologies** course. Version 3.0.0 rebuilds it in plain PHP with an object-oriented MVC structure, a single front controller, PDO and an automated test suite. It uses no framework and has no third-party PHP dependencies.
 
+## Demo video
+
+[![Watch the FoodHub demo on YouTube](docs/demo-thumbnail.jpg)](https://youtu.be/8NahOGip0Uc)
+
+A 19-minute walkthrough of the application. Click the picture to watch it, or use one of these links:
+
+| | |
+|:---|:---|
+| ▶️ **Watch online** | [youtu.be/8NahOGip0Uc](https://youtu.be/8NahOGip0Uc) |
+| ⬇️ **Download** | [FoodHub-demo.mp4](https://github.com/Jisan179/FoodHub/releases/download/v3.0.0/FoodHub-demo.mp4) (MP4, 1080p, about 218 MB) |
+
+The recording has background music and no voice-over. Some parts are blurred to hide private information. The thumbnail is an AI-generated illustration, not a screenshot of the application.
+
+<sub>Music: Fall Asleep by [Tokyo Music Walker](https://soundcloud.com/user-356546060), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). [Free download / stream](https://links.al/gOA). Music promoted by [Audio Library](https://links.al/youtube). The track is looped and its volume is lowered in this video.</sub>
+
 ## Contents
 
+- [Demo video](#demo-video)
 - [Version history](#version-history)
 - [Features](#features)
 - [Use case diagram](#use-case-diagram)
