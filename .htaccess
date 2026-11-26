@@ -1,16 +1,14 @@
-# FoodHub - block files that must never be served over the web
+# Only the public/ folder is reachable. Every request is routed into it, so
+# source code, .env, .git and database files can never be downloaded.
 Options -Indexes
 
-<FilesMatch "\.(sql|md|log|bak)$">
-    Require all denied
-</FilesMatch>
-
-<IfModule mod_alias.c>
-    RedirectMatch 404 /\.git
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^public/ - [L]
+    RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
-<IfModule php_module>
-    php_flag session.cookie_httponly on
-    php_value session.cookie_samesite Lax
-    php_flag session.use_strict_mode on
+# Fail closed if URL rewriting is unavailable
+<IfModule !mod_rewrite.c>
+    Require all denied
 </IfModule>
